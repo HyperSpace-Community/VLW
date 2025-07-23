@@ -361,14 +361,30 @@ document.addEventListener('DOMContentLoaded', function() {
         updateParallax();
     }
 
-    // Scroll: Only reduce scale slightly but keep orbital system visible
+    // Scroll: Adapt orbital system to theme transitions
+    let lastScrollY = 0;
     window.addEventListener('scroll', () => {
         const scrollY = window.scrollY;
         const scrollPercentage = Math.min(scrollY / window.innerHeight, 1);
+        
+        // Smoother orbital system scaling
         anime.set('.orbital-system', {
-            scale: 1 - scrollPercentage * 0.1, // Reduced from 0.25 to 0.1
-            opacity: 1 - scrollPercentage * 0.3, // Reduced from 0.9 to 0.3
+            scale: 1 - scrollPercentage * 0.08,
+            opacity: Math.max(0.2, 1 - scrollPercentage * 0.25),
         });
+        
+        // Update orbital rings color based on scroll position
+        const isNearProductsSection = scrollY > window.innerHeight * 0.5;
+        if (isNearProductsSection !== (lastScrollY > window.innerHeight * 0.5)) {
+            const orbits = document.querySelectorAll('.orbit-ring');
+            orbits.forEach(orbit => {
+                orbit.style.transition = 'border-color 0.6s ease';
+                orbit.style.borderColor = isNearProductsSection ? 
+                    'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.1)';
+            });
+        }
+        
+        lastScrollY = scrollY;
     });
 
     // Product icon: 3D spin without bounce
@@ -528,3 +544,316 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 window.addEventListener('load', function() {
     document.body.classList.add('loaded');
 });
+
+// Scroll-based white theme transition for Our Innovations section
+document.addEventListener('DOMContentLoaded', function() {
+    const productsSection = document.getElementById('products');
+    const header = document.querySelector('.header');
+    if (!productsSection) return;
+
+    let isLightMode = false;
+    let fontCycleInterval = null;
+    let currentFontIndex = 0;
+    
+    // Array of fonts to cycle through (using the provided Google Fonts)
+    const fonts = [
+        { family: "'Bitcount', monospace", weight: "600", spacing: "1px", transform: "uppercase" },
+        { family: "'Notable', sans-serif", weight: "400", spacing: "2px", transform: "uppercase" },
+        { family: "'Raleway', sans-serif", weight: "700", spacing: "-1px", transform: "none" },
+        { family: "'Special Gothic Expanded One', sans-serif", weight: "400", spacing: "2px", transform: "uppercase" },
+        { family: "'Bodoni Moda', serif", weight: "700", spacing: "0px", transform: "none" },
+        { family: "'Bodoni Moda SC', serif", weight: "600", spacing: "1px", transform: "uppercase" },
+        { family: "'Cinzel', serif", weight: "600", spacing: "1.5px", transform: "uppercase" }
+    ];
+    
+    // Function to get a random font different from current
+    function getRandomFont() {
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * fonts.length);
+        } while (randomIndex === currentFontIndex && fonts.length > 1);
+        
+        currentFontIndex = randomIndex;
+        return fonts[randomIndex];
+    }
+    
+    // Function to apply random font to section header
+    function applyRandomFont(sectionHeader) {
+        const randomFont = getRandomFont();
+        sectionHeader.style.fontFamily = randomFont.family;
+        sectionHeader.style.fontWeight = randomFont.weight;
+        sectionHeader.style.letterSpacing = randomFont.spacing;
+        sectionHeader.style.textTransform = randomFont.transform;
+    }
+    
+    // Function to start font cycling
+    function startFontCycling(sectionHeader) {
+        if (fontCycleInterval) return; // Already running
+        
+        fontCycleInterval = setInterval(() => {
+            applyRandomFont(sectionHeader);
+        }, 800); // Change font every 800ms
+    }
+    
+    // Function to stop font cycling
+    function stopFontCycling(sectionHeader) {
+        if (fontCycleInterval) {
+            clearInterval(fontCycleInterval);
+            fontCycleInterval = null;
+            
+            // Revert to original font (matching CSS)
+            sectionHeader.style.fontFamily = "";
+            sectionHeader.style.fontWeight = "800";
+            sectionHeader.style.letterSpacing = "-2px";
+            sectionHeader.style.textTransform = "none";
+        }
+    }
+
+    function updateTheme(progress) {
+        // Calculate color values based on scroll progress (0 = dark, 1 = light)
+        const bgR = Math.round(10 + (255 - 10) * progress);
+        const bgG = Math.round(10 + (255 - 10) * progress);
+        const bgB = Math.round(10 + (255 - 10) * progress);
+        
+        const textR = Math.round(255 - 255 * progress);
+        const textG = Math.round(255 - 255 * progress);
+        const textB = Math.round(255 - 255 * progress);
+        
+        // Apply theme to body
+        document.body.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
+        document.body.style.color = `rgb(${textR}, ${textG}, ${textB})`;
+        
+        // Apply theme to header
+        if (header) {
+            header.style.background = `rgba(${bgR}, ${bgG}, ${bgB}, 0.6)`;
+            header.style.color = `rgb(${textR}, ${textG}, ${textB})`;
+            
+            // Update logo color
+            const logo = header.querySelector('.logo');
+            if (logo) {
+                logo.style.color = `rgb(${textR}, ${textG}, ${textB})`;
+            }
+            
+            // Update nav links
+            const navLinks = header.querySelectorAll('.nav a');
+            navLinks.forEach(link => {
+                const inactiveOpacity = progress > 0.5 ? 0.6 : 0.53;
+                link.style.color = `rgba(${textR}, ${textG}, ${textB}, ${inactiveOpacity})`;
+            });
+        }
+        
+        // Apply theme to products section
+        const sectionBgR = Math.round(8 + (255 - 8) * progress);
+        const sectionBgG = Math.round(8 + (255 - 8) * progress);
+        const sectionBgB = Math.round(8 + (255 - 8) * progress);
+        productsSection.style.backgroundColor = `rgb(${sectionBgR}, ${sectionBgG}, ${sectionBgB})`;
+        
+        // Update section header with font changes
+        const sectionHeader = document.getElementById('innovations-title');
+        const sectionText = productsSection.querySelector('.section-header p');
+        if (sectionHeader) {
+            sectionHeader.style.color = `rgb(${textR}, ${textG}, ${textB})`;
+            sectionHeader.style.transition = 'color 0.3s ease, font-family 0.4s ease, font-weight 0.4s ease, letter-spacing 0.4s ease, text-transform 0.4s ease';
+            
+            // Start/stop random font cycling based on white theme progress
+            if (progress > 0.5) {
+                // In white theme - start random font cycling
+                startFontCycling(sectionHeader);
+            } else {
+                // In dark theme - stop cycling and use original font
+                stopFontCycling(sectionHeader);
+            }
+        }
+        if (sectionText) {
+            const subTextR = Math.round(136 + (51 - 136) * progress);
+            const subTextG = Math.round(136 + (51 - 136) * progress);
+            const subTextB = Math.round(136 + (51 - 136) * progress);
+            sectionText.style.color = `rgb(${subTextR}, ${subTextG}, ${subTextB})`;
+        }
+        
+        // Update product cards
+        const productCards = productsSection.querySelectorAll('.product-card');
+        productCards.forEach(card => {
+            const cardBgR = Math.round(17 + (248 - 17) * progress);
+            const cardBgG = Math.round(17 + (248 - 17) * progress);
+            const cardBgB = Math.round(17 + (248 - 17) * progress);
+            card.style.backgroundColor = `rgb(${cardBgR}, ${cardBgG}, ${cardBgB})`;
+            
+            const borderOpacity = progress > 0.5 ? 0.1 : 0.1;
+            const borderR = Math.round(255 * (1 - progress));
+            const borderG = Math.round(255 * (1 - progress));
+            const borderB = Math.round(255 * (1 - progress));
+            card.style.borderColor = `rgba(${borderR}, ${borderG}, ${borderB}, ${borderOpacity})`;
+            
+            // Update card text elements
+            const cardTitle = card.querySelector('h3');
+            const cardText = card.querySelector('p');
+            const cardFeatures = card.querySelectorAll('.product-features li');
+            const statusText = card.querySelector('.status-text');
+            const learnMoreBtn = card.querySelector('.btn-primary');
+            
+            if (cardTitle) cardTitle.style.color = `rgb(${textR}, ${textG}, ${textB})`;
+            
+            if (cardText) {
+                const cardTextR = Math.round(160 + (51 - 160) * progress);
+                const cardTextG = Math.round(160 + (51 - 160) * progress);
+                const cardTextB = Math.round(160 + (51 - 160) * progress);
+                cardText.style.color = `rgb(${cardTextR}, ${cardTextG}, ${cardTextB})`;
+            }
+            
+            if (statusText) {
+                const statusR = Math.round(136 + (102 - 136) * progress);
+                const statusG = Math.round(136 + (102 - 136) * progress);
+                const statusB = Math.round(136 + (102 - 136) * progress);
+                statusText.style.color = `rgb(${statusR}, ${statusG}, ${statusB})`;
+            }
+            
+            cardFeatures.forEach(feature => {
+                const featureR = Math.round(204 + (68 - 204) * progress);
+                const featureG = Math.round(204 + (68 - 204) * progress);
+                const featureB = Math.round(204 + (68 - 204) * progress);
+                feature.style.color = `rgb(${featureR}, ${featureG}, ${featureB})`;
+                
+                // Fix arrow (::before) color for light theme
+                if (progress > 0.5) {
+                    feature.style.setProperty('--arrow-color', '#000000');
+                } else {
+                    feature.style.setProperty('--arrow-color', '#ffffff');
+                }
+            });
+            
+            // Update Learn More button for light mode
+            if (learnMoreBtn) {
+                if (progress > 0.5) {
+                    learnMoreBtn.style.backgroundColor = '#000000';
+                    learnMoreBtn.style.color = '#ffffff';
+                    learnMoreBtn.style.border = '2px solid #000000';
+                } else {
+                    learnMoreBtn.style.backgroundColor = '#ffffff';
+                    learnMoreBtn.style.color = '#0a0a0a';
+                    learnMoreBtn.style.border = '2px solid #ffffff';
+                }
+            }
+        });
+        
+        // Update hero Explore Solutions button if visible
+        const exploreSolutionsBtn = document.querySelector('.hero .btn-primary');
+        if (exploreSolutionsBtn && progress > 0.3) {
+            if (progress > 0.5) {
+                exploreSolutionsBtn.style.backgroundColor = '#000000';
+                exploreSolutionsBtn.style.color = '#ffffff';
+                exploreSolutionsBtn.style.border = '2px solid #000000';
+            } else {
+                exploreSolutionsBtn.style.backgroundColor = '#ffffff';
+                exploreSolutionsBtn.style.color = '#0a0a0a';
+                exploreSolutionsBtn.style.border = '2px solid #ffffff';
+            }
+        }
+    }
+
+    // Scroll-based theme transition
+    function handleScroll() {
+        const sectionTop = productsSection.offsetTop;
+        const scrollY = window.scrollY;
+        const windowHeight = window.innerHeight;
+        
+        // Start transition when section is 80% of viewport away
+        const transitionStart = sectionTop - windowHeight * 0.8;
+        // Complete transition when section top reaches viewport
+        const transitionEnd = sectionTop - windowHeight * 0.1;
+        
+        let progress = 0;
+        
+        if (scrollY >= transitionStart && scrollY <= transitionEnd) {
+            // We're in the transition zone - gradually change from dark to light
+            progress = (scrollY - transitionStart) / (transitionEnd - transitionStart);
+            progress = Math.max(0, Math.min(1, progress));
+        } else if (scrollY > transitionEnd) {
+            // We've reached the section, stay in full light mode
+            progress = 1;
+        } else {
+            // We're before the transition zone, stay in dark mode
+            progress = 0;
+        }
+        
+        updateTheme(progress);
+        isLightMode = progress > 0.5;
+    }
+
+    // Throttled scroll handler for better performance
+    let ticking = false;
+    function throttledScrollHandler() {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                handleScroll();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }
+
+    // Listen to scroll events
+    window.addEventListener('scroll', throttledScrollHandler);
+    
+    // Initial call
+    handleScroll();
+});
+
+// Function to scroll to products section with white theme transition
+function scrollToProducts() {
+    console.log('scrollToProducts called'); // Debug log
+    
+    const productsSection = document.getElementById('products');
+    if (!productsSection) {
+        console.log('Products section not found');
+        return;
+    }
+    
+    console.log('Products section found, creating overlay'); // Debug log
+    
+    // Create and show white flash overlay immediately
+    const flashOverlay = document.createElement('div');
+    flashOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: white;
+        z-index: 99999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    `;
+    
+    document.body.appendChild(flashOverlay);
+    
+    // Force immediate white flash
+    requestAnimationFrame(() => {
+        flashOverlay.style.opacity = '0.95';
+        console.log('White flash started'); // Debug log
+    });
+    
+    // Start scroll after brief delay
+    setTimeout(() => {
+        productsSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+        console.log('Scroll started'); // Debug log
+    }, 200);
+    
+    // Fade out white overlay
+    setTimeout(() => {
+        flashOverlay.style.opacity = '0';
+        console.log('White flash ending'); // Debug log
+    }, 800);
+    
+    // Clean up overlay
+    setTimeout(() => {
+        if (flashOverlay.parentNode) {
+            flashOverlay.parentNode.removeChild(flashOverlay);
+        }
+        console.log('Overlay removed'); // Debug log
+    }, 1200);
+}
