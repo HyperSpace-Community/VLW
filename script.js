@@ -1,4 +1,50 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu functionality
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileNav = document.querySelector('.mobile-nav');
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+    
+    if (mobileMenuToggle && mobileNav) {
+        mobileMenuToggle.addEventListener('click', function() {
+            mobileMenuToggle.classList.toggle('active');
+            mobileNav.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (mobileNav.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close mobile menu when clicking on a link
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuToggle.classList.remove('active');
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuToggle.contains(e.target) && !mobileNav.contains(e.target)) {
+                mobileMenuToggle.classList.remove('active');
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close mobile menu on window resize if it gets too large
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 968) {
+                mobileMenuToggle.classList.remove('active');
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
     // Orbital system with richer, layered rotation and scale
     anime({
         targets: '.orbit-1',
@@ -48,91 +94,65 @@ document.addEventListener('DOMContentLoaded', function() {
         easing: 'easeInOutSine'
     });
 
-    // Realistic Solar System Physics
-    const productBalls = document.querySelectorAll('.product-ball');
-    const ballPhysics = [];
-    const sunCore = document.querySelector('.core-inner');
-    
-    // Simple orbital physics constants
-    const ORBITAL_SPEED = 0.02; // Base orbital speed
-    const SLINGSHOT_DISTANCE = 60; // Distance for slingshot effect
-    const SLINGSHOT_BOOST = 1.5; // Speed multiplier during slingshot
-    
-    // Get responsive scaling factor based on screen size
-    function getResponsiveScale() {
-        const screenWidth = window.innerWidth;
-        if (screenWidth <= 480) return 0.5;      // Very small screens
-        if (screenWidth <= 640) return 0.6;      // Small screens  
-        if (screenWidth <= 968) return 0.75;     // Medium screens
-        if (screenWidth <= 1200) return 0.9;     // Large screens
-        return 1.0;                              // Extra large screens
-    }
+    // VL text animation - smooth scaling effect
+    anime({
+        targets: '.core-inner',
+        scale: [1, 1.15, 0.95, 1],
+        rotateZ: [0, 2, -2, 0],
+        textShadow: [
+            '0 0 0px rgba(0,0,0,0)',
+            '0 2px 12px rgba(0,0,0,0.4)',
+            '0 1px 6px rgba(0,0,0,0.2)',
+            '0 0 0px rgba(0,0,0,0)'
+        ],
+        duration: 4000,
+        loop: true,
+        easing: 'easeInOutSine',
+        delay: 800
+    });
 
-    // Initialize simple circular orbits
+    // Simple Orbital Animation System
+    const productBalls = document.querySelectorAll('.product-ball');
+    
+    if (productBalls.length === 0) {
+        console.log('No product balls found - orbital animation will not start');
+        return;
+    }
+    
+    console.log(`Found ${productBalls.length} product balls for orbital animation`);
+    
+    // Animation control variables - declare before use
+    let animationPaused = false;
+    const pauseThreshold = 768; // Pause on mobile devices
+    
+    // Simple animation variables
+    let animationTime = 0;
+    const animationSpeed = 0.012; // Degrees per frame
+    
+    // Ball positions and radii
+    const ballConfigs = [
+        { radius: 120, speed: 1.2, initialAngle: 0 },    // LATMO - inner orbit
+        { radius: 180, speed: 0.8, initialAngle: Math.PI } // MAi - outer orbit
+    ];
+
+    // Initialize balls with simple positioning
     productBalls.forEach((ball, index) => {
-        const scale = getResponsiveScale();
+        if (index >= ballConfigs.length) return;
         
-        // Simple orbital parameters
-        const orbitRadius = (index === 0 ? 100 : 150) * scale; // LATMO closer, MAi farther
-        const baseSpeed = ORBITAL_SPEED * (index === 0 ? 1.2 : 0.8); // Inner planet faster
+        const config = ballConfigs[index];
         
-        // Start at different positions
-        const initialAngle = index * Math.PI; // Start on opposite sides
+        // Set initial position (balls are centered at 50% 50% by CSS)
+        const x = config.radius * Math.cos(config.initialAngle);
+        const y = config.radius * Math.sin(config.initialAngle);
         
-        const ballData = {
-            element: ball,
-            
-            // Orbital state
-            angle: initialAngle,
-            orbitRadius: orbitRadius,
-            baseSpeed: baseSpeed,
-            currentSpeed: baseSpeed,
-            
-            // Slingshot state
-            slingshotActive: false,
-            slingshotCooldown: 0,
-            
-            // Visual properties
-            scale: 1,
-            glow: { 
-                radius: 20, 
-                opacity: 0.5, 
-                color: index === 0 ? [99, 232, 241] : [16, 185, 129] 
-            },
-            isHovered: false
-        };
+        // Style the ball for visibility - translate from center position
+        ball.style.transform = `translate(${x - 15}px, ${y - 15}px)`;
+        ball.style.opacity = '1';
+        ball.style.pointerEvents = 'auto';
         
-        ballPhysics.push(ballData);
+        console.log(`Ball ${index} positioned at (${x}, ${y}) with radius ${config.radius}`);
         
-        // Calculate initial position
-        const x = ballData.orbitRadius * Math.cos(ballData.angle);
-        const y = ballData.orbitRadius * Math.sin(ballData.angle);
-        
-        // Set initial position immediately for visibility
-        ballData.element.style.transform = `translate(${x}px, ${y}px) scale(1)`;
-        ballData.element.style.opacity = 1;
-        ballData.element.style.zIndex = 10;
-        
-        console.log(`Initialized planet ${index}: radius=${ballData.orbitRadius}, angle=${ballData.angle}, pos(${x}, ${y})`);
-        
-        // Original hover functionality
-        ball.addEventListener('mouseenter', function() {
-            ballData.isHovered = true;
-            ball.style.cursor = 'pointer';
-            // Add subtle scale effect on hover
-            ball.style.transition = 'transform 0.3s ease';
-            ball.style.transform += ' scale(1.1)';
-        });
-        
-        ball.addEventListener('mouseleave', function() {
-            ballData.isHovered = false;
-            ball.style.cursor = 'default';
-            // Remove scale effect
-            ball.style.transition = 'transform 0.3s ease';
-            // The transform will be updated by the animation loop
-        });
-        
-        // Click functionality
+        // Add click functionality
         ball.addEventListener('click', function() {
             const product = this.getAttribute('data-product');
             if (product === 'latmo') {
@@ -143,149 +163,142 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    function updateSimpleOrbitalSystem() {
-        ballPhysics.forEach((planet, index) => {
-            if (!planet.isHovered) {
-                // Decrease slingshot cooldown
-                if (planet.slingshotCooldown > 0) {
-                    planet.slingshotCooldown--;
-                }
-                
-                // Update orbital angle
-                planet.angle += planet.currentSpeed;
-                
-                // Calculate current position
-                const x = planet.orbitRadius * Math.cos(planet.angle);
-                const y = planet.orbitRadius * Math.sin(planet.angle);
-                
-                // Check for slingshot effects
-                checkSlingshotEffects(planet, index);
-                
-                // Apply slingshot speed boost
-                if (planet.slingshotActive && planet.slingshotCooldown === 0) {
-                    planet.currentSpeed = planet.baseSpeed * SLINGSHOT_BOOST;
-                    planet.slingshotCooldown = 60; // 1 second cooldown at 60fps
-                } else if (!planet.slingshotActive) {
-                    // Gradually return to normal speed
-                    planet.currentSpeed = planet.currentSpeed * 0.98 + planet.baseSpeed * 0.02;
-                }
-                
-                // Apply visual effects during slingshot
-                const scale = planet.slingshotActive ? 1.3 : 1.0;
-                const glowIntensity = planet.slingshotActive ? 1.5 : 1.0;
-                
-                // Update position
-                planet.element.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
-                planet.element.style.opacity = 1;
-                planet.element.style.zIndex = 10;
-                
-                // Update glow effect
-                const balls = planet.element.querySelector('.ball-content');
-                if (balls) {
-                    const baseColor = planet.glow.color;
-                    const glowColor = `rgba(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]}, ${planet.glow.opacity * glowIntensity})`;
-                    const glowRadius = planet.glow.radius * glowIntensity;
-                    balls.style.boxShadow = `0 0 ${glowRadius}px ${glowColor}`;
-                }
-            }
-        });
-        
-        requestAnimationFrame(updateSimpleOrbitalSystem);
-    }
-    
-    function checkSlingshotEffects(planet, planetIndex) {
-        planet.slingshotActive = false;
-        
-        // Check distance to sun (center)
-        const distanceToSun = planet.orbitRadius;
-        if (distanceToSun < SLINGSHOT_DISTANCE) {
-            planet.slingshotActive = true;
+    // Simple animation loop with debugging
+    function animateOrbitalSystem() {
+        // Skip animation updates if paused (for mobile performance)
+        if (animationPaused) {
+            requestAnimationFrame(animateOrbitalSystem);
+            return;
         }
         
-        // Check distance to other planets
-        ballPhysics.forEach((otherPlanet, otherIndex) => {
-            if (planetIndex !== otherIndex) {
-                const x1 = planet.orbitRadius * Math.cos(planet.angle);
-                const y1 = planet.orbitRadius * Math.sin(planet.angle);
-                const x2 = otherPlanet.orbitRadius * Math.cos(otherPlanet.angle);
-                const y2 = otherPlanet.orbitRadius * Math.sin(otherPlanet.angle);
-                
-                const distance = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-                
-                if (distance < SLINGSHOT_DISTANCE) {
-                    planet.slingshotActive = true;
-                }
+        animationTime += animationSpeed;
+        
+        productBalls.forEach((ball, index) => {
+            if (index >= ballConfigs.length) return;
+            
+            const config = ballConfigs[index];
+            const angle = config.initialAngle + (animationTime * config.speed);
+            
+            // Calculate new position
+            const x = config.radius * Math.cos(angle);
+            const y = config.radius * Math.sin(angle);
+            
+            // Update ball position - translate from center position (subtract half ball size)
+            ball.style.transform = `translate(${x - 15}px, ${y - 15}px)`;
+            ball.style.opacity = '1';
+            
+            // Debug logging every 300 frames (about 5 seconds at 60fps)
+            if (Math.floor(animationTime * 1000) % 300 === 0 && index === 0) {
+                console.log(`Ball ${index} at angle ${angle.toFixed(2)}, position (${x.toFixed(1)}, ${y.toFixed(1)})`);
             }
         });
+        
+        requestAnimationFrame(animateOrbitalSystem);
     }
     
-    // Start the simple orbital system with slingshot physics
-    updateSimpleOrbitalSystem();
+    // Start the simple orbital animation
+    console.log('Starting orbital animation system...');
+    animateOrbitalSystem();
 
     // Handle window resize for responsive orbital system
     let resizeTimeout;
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(function() {
-            // Recalculate orbital parameters for new screen size
-            const newScale = getResponsiveScale();
+            // Recalculate orbital radii for new screen size
+            const screenWidth = window.innerWidth;
+            const scaleFactor = screenWidth <= 480 ? 0.6 : screenWidth <= 768 ? 0.8 : 1.0;
             
-            ballPhysics.forEach((planet, index) => {
-                // Update orbital radius with new scale
-                planet.orbitRadius = (index === 0 ? 100 : 150) * newScale;
-            });
+            ballConfigs[0].radius = 120 * scaleFactor; // LATMO
+            ballConfigs[1].radius = 180 * scaleFactor; // MAi
+            
+            console.log('Orbital radii updated for screen size:', screenWidth);
         }, 250); // Debounce resize events
     });
+
+    // Pause animations on mobile when not visible for better performance
+    function handleVisibilityChange() {
+        if (window.innerWidth <= pauseThreshold) {
+            if (document.hidden) {
+                animationPaused = true;
+            } else {
+                animationPaused = false;
+            }
+        } else {
+            // Always keep animations running on desktop
+            animationPaused = false;
+        }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
 
     // Smooth Rhombus color animation for both rhombuses
     const rhombuses = ['#line1', '#line2']; // Both rhombus IDs
-    const originalColor = '#44faff'; // Default original color
+    const originalColor = 'rgba(68, 250, 255, 0.8)'; // Bright cyan color
     
     // Array of vibrant colors for random selection
     const colors = [
-        '#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#44ffff',
-        '#ff8844', '#88ff44', '#4488ff', '#ff4488', '#88ff88', '#8844ff',
-        '#ffaa44', '#44ffaa', '#aa44ff', '#ff44aa', '#aaff44', '#44aaff',
-        '#ff6b6b', '#6bff6b', '#6b6bff', '#ffff6b', '#ff6bff', '#6bffff'
+        'rgba(255, 68, 68, 0.8)',   // Red
+        'rgba(68, 255, 68, 0.8)',   // Green  
+        'rgba(68, 68, 255, 0.8)',   // Blue
+        'rgba(255, 255, 68, 0.8)',  // Yellow
+        'rgba(255, 68, 255, 0.8)',  // Magenta
+        'rgba(255, 136, 68, 0.8)',  // Orange
+        'rgba(136, 255, 68, 0.8)',  // Lime
+        'rgba(68, 136, 255, 0.8)',  // Light Blue
+        'rgba(255, 68, 136, 0.8)',  // Pink
+        'rgba(136, 68, 255, 0.8)'   // Purple
     ];
     
     // Helper to get a random color from the array
     const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
     
+    console.log('Setting up rhombus color animations...');
+    
     rhombuses.forEach((rhombusId, index) => {
         const rhombus = document.querySelector(rhombusId);
+        console.log(`Looking for rhombus: ${rhombusId}`, rhombus);
+        
         if (rhombus) {
+            // Set initial color
+            rhombus.style.stroke = originalColor;
+            console.log(`Rhombus ${rhombusId} found and initial color set`);
+            
             function animateRhombusColor() {
                 const randomColor = getRandomColor();
+                console.log(`Animating ${rhombusId} to color: ${randomColor}`);
                 
                 // Animate to random color with smooth transition
                 anime({
                     targets: rhombus,
                     stroke: randomColor,
-                    duration: 1000, // Longer duration for smoother transition
+                    duration: 1200,
                     easing: 'easeInOutCubic',
                     complete: () => {
                         // Hold the color for a moment
                         setTimeout(() => {
+                            console.log(`Returning ${rhombusId} to original color: ${originalColor}`);
                             // Animate back to original color
                             anime({
                                 targets: rhombus,
                                 stroke: originalColor,
-                                duration: 1200, // Even smoother return transition
+                                duration: 1500,
                                 easing: 'easeInOutCubic',
                                 complete: () => {
                                     // Wait before next color change with random delay
-                                    setTimeout(animateRhombusColor, 2000 + Math.random() * 1500);
+                                    setTimeout(animateRhombusColor, 2500 + Math.random() * 2000);
                                 }
                             });
-                        }, 800); // Hold the random color for 800ms
+                        }, 1000); // Hold the random color for 1000ms
                     }
                 });
             }
             
             // Start each rhombus animation with a slight delay offset
-            setTimeout(animateRhombusColor, 1000 + (index * 500));
+            setTimeout(animateRhombusColor, 2000 + (index * 1000));
+        } else {
+            console.error(`Rhombus not found: ${rhombusId}`);
         }
     });
 

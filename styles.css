@@ -126,9 +126,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 48px;
+    padding: 0 clamp(20px, 5vw, 48px);
     position: relative;
-    gap: 80px;
+    gap: clamp(40px, 8vw, 80px);
 }
 
 .hero-content {
@@ -139,7 +139,7 @@ body {
 }
 
 .hero h1 {
-    font-size: 80px;
+    font-size: clamp(36px, 8vw, 80px);
     font-weight: 800;
     line-height: 0.95;
     margin-bottom: 40px;
@@ -149,12 +149,13 @@ body {
 
 .hero p {
     font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 22px;
+    font-size: clamp(16px, 4vw, 22px);
     color: #b0b0b0;
-    margin-bottom: 56px;
+    margin-bottom: clamp(32px, 6vw, 56px);
     font-weight: 400;
     line-height: 1.6;
     letter-spacing: 0.2px;
+    max-width: 100%;
 }
 
 .hero-buttons {
@@ -164,10 +165,10 @@ body {
 }
 
 .btn {
-    padding: 18px 36px;
+    padding: clamp(14px, 3vw, 18px) clamp(24px, 5vw, 36px);
     border-radius: 12px;
     text-decoration: none;
-    font-size: 16px;
+    font-size: clamp(14px, 3vw, 16px);
     font-weight: 600;
     font-family: 'Raleway', sans-serif;
     transition: all 0.3s ease;
@@ -178,6 +179,8 @@ body {
     border: none;
     text-transform: none;
     letter-spacing: 0.5px;
+    min-height: 44px;
+    justify-content: center;
 }
 
 .btn-primary {
@@ -209,13 +212,14 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    height: 600px;
-    min-width: 500px;
+    height: clamp(300px, 50vh, 600px);
+    min-width: clamp(250px, 50vw, 500px);
+    width: 100%;
 }
 
 .orbital-system {
-    width: 500px;
-    height: 500px;
+    width: clamp(250px, 40vw, 500px);
+    height: clamp(250px, 40vw, 500px);
     position: relative;
 }
 
@@ -254,8 +258,8 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
+    width: clamp(60px, 12vw, 120px);
+    height: clamp(60px, 12vw, 120px);
     z-index: 10;
 }
 
@@ -267,7 +271,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: clamp(14px, 4vw, 24px);
     font-weight: 700;
     color: #0a0a0a;
     box-shadow: 
@@ -283,11 +287,10 @@ body {
     border-radius: 50%;
     top: 50%;
     left: 50%;
-    margin-left: -15px;
-    margin-top: -15px;
+    transform-origin: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 15;
+    transition: transform 0.1s ease;
+    z-index: 20;
 }
 
 .ball-content {
@@ -409,7 +412,7 @@ body {
 
 /* Products Section */
 .products {
-    padding: 140px 48px;
+    padding: clamp(80px, 12vw, 140px) clamp(20px, 5vw, 48px);
     background: #080808;
 }
 
@@ -429,7 +432,7 @@ body {
 }
 
 .section-header h2 {
-    font-size: 56px;
+    font-size: clamp(32px, 6vw, 56px);
     font-weight: 800;
     margin: 0;
     letter-spacing: -2px;
@@ -439,7 +442,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     white-space: nowrap;
-    min-width: 400px;
+    min-width: clamp(200px, 50vw, 400px);
     text-align: center;
 }
 
@@ -454,20 +457,23 @@ body {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
-    gap: 56px;
+    grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
+    gap: clamp(24px, 4vw, 56px);
     max-width: 1280px;
     margin: 0 auto;
+    padding: 0 20px;
 }
 
 .product-card {
     background: #111111;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 56px;
+    border-radius: clamp(12px, 3vw, 20px);
+    padding: clamp(24px, 5vw, 56px);
     transition: all 0.4s ease;
     position: relative;
     overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .product-card::before {
@@ -526,11 +532,12 @@ body {
 }
 
 .product-card h3 {
-    font-size: 36px;
+    font-size: clamp(24px, 5vw, 36px);
     font-weight: 800;
     margin-bottom: 8px;
     letter-spacing: -1px;
     color: #ffffff;
+    line-height: 1.2;
 }
 
 .product-version {
@@ -545,17 +552,17 @@ body {
     font-family: 'Source Sans 3', sans-serif;
     color: #a0a0a0;
     line-height: 1.7;
-    margin-bottom: 36px;
+    margin-bottom: clamp(24px, 4vw, 36px);
     font-weight: 400;
-    font-size: 17px;
+    font-size: clamp(14px, 3vw, 17px);
     letter-spacing: 0.2px;
 }
 
 .product-features {
     list-style: none;
-    margin-bottom: 48px;
+    margin-bottom: clamp(32px, 5vw, 48px);
     display: grid;
-    gap: 16px;
+    gap: clamp(12px, 2vw, 16px);
 }
 
 .product-features li {
@@ -563,9 +570,9 @@ body {
     color: #cccccc;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: clamp(12px, 2vw, 16px);
     font-weight: 500;
-    font-size: 15px;
+    font-size: clamp(13px, 2.5vw, 15px);
     line-height: 1.5;
 }
 
@@ -961,7 +968,7 @@ body {
 
 /* Footer */
 .footer {
-    padding: 64px 48px;
+    padding: clamp(32px, 8vw, 64px) clamp(20px, 5vw, 48px);
     text-align: center;
     color: #444444;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -971,8 +978,9 @@ body {
 .footer-links {
     display: flex;
     justify-content: center;
-    gap: 40px;
-    margin-bottom: 32px;
+    gap: clamp(20px, 5vw, 40px);
+    margin-bottom: clamp(20px, 4vw, 32px);
+    flex-wrap: wrap;
 }
 
 .footer-links a {
@@ -1008,6 +1016,81 @@ body {
         linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
         linear-gradient(0deg, rgba(255,255,255,0.1) 1px, transparent 1px);
     background-size: 40px 40px;
+}
+
+/* Mobile Navigation */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 1001;
+}
+
+.mobile-menu-toggle span {
+    width: 20px;
+    height: 2px;
+    background: #ffffff;
+    margin: 2px 0;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.mobile-menu-toggle.active span:first-child {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.active span:third-child {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+.mobile-nav {
+    display: none;
+    position: fixed;
+    top: clamp(60px, 10vh, 70px);
+    left: 0;
+    right: 0;
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    padding: 20px 0;
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
+}
+
+.mobile-nav.active {
+    display: block;
+}
+
+.mobile-nav-link {
+    display: block;
+    padding: 15px 30px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link:focus {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding-left: 40px;
+}
+
+.mobile-nav-link:last-child {
+    border-bottom: none;
 }
 
 /* Responsive Design */
@@ -1789,6 +1872,27 @@ body {
     }
 }
 
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+    .product-card {
+        transition: all 0.2s ease;
+    }
+    
+    .product-card:active {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn:active {
+        transform: scale(0.98);
+    }
+    
+    .mobile-nav-link:active {
+        background: rgba(255, 255, 255, 0.15);
+    }
+}
+
 
 @media (max-width: 1200px) {
     .hero {
@@ -1819,14 +1923,7 @@ body {
         margin-top: -108px;
     }
     
-    .core {
-        width: 108px;
-        height: 108px;
-    }
     
-    .core-inner {
-        font-size: 22px;
-    }
 }
 
 @media (max-width: 968px) {
@@ -1835,7 +1932,11 @@ body {
     }
     
     .nav {
-        gap: 24px;
+        display: none;
+    }
+    
+    .mobile-menu-toggle {
+        display: flex;
     }
     
     .hero {
@@ -1880,14 +1981,7 @@ body {
         margin-top: -90px;
     }
     
-    .core {
-        width: 90px;
-        height: 90px;
-    }
     
-    .core-inner {
-        font-size: 20px;
-    }
     
     .metric-display {
         padding: 10px 14px;
@@ -1926,11 +2020,21 @@ body {
     }
     
     .nav {
-        gap: 20px;
+        display: none;
     }
     
-    .nav a {
+    .mobile-menu-toggle {
+        display: flex;
+    }
+    
+    .mobile-nav {
+        top: 60px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
         font-size: 13px;
+        min-height: 38px;
     }
     
     .hero {
@@ -1989,14 +2093,7 @@ body {
         margin-top: -72px;
     }
     
-    .core {
-        width: 72px;
-        height: 72px;
-    }
     
-    .core-inner {
-        font-size: 16px;
-    }
     
     .metric-display {
         padding: 8px 12px;
@@ -2157,14 +2254,45 @@ body {
 @media (max-width: 480px) {
     .hero {
         flex-direction: column-reverse;
+        padding: 80px 15px 40px;
+        gap: 30px;
+    }
+    
+    .hero-content {
+        padding-right: 0;
+        max-width: 100%;
     }
     
     .hero h1 {
-        font-size: 36px;
+        font-size: clamp(32px, 9vw, 40px);
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .hero p {
+        font-size: 15px;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+    
+    .hero-buttons {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .btn {
+        width: auto;
+        max-width: 200px;
+        padding: 12px 20px;
+        font-size: 14px;
+        min-height: 40px;
     }
     
     .animation-container {
-        height: 280px;
+        height: 250px;
+        min-width: 250px;
     }
     
     .orbital-system {
@@ -2191,14 +2319,7 @@ body {
         margin-top: -60px;
     }
     
-    .core {
-        width: 60px;
-        height: 60px;
-    }
     
-    .core-inner {
-        font-size: 14px;
-    }
     
     .section-header h2 {
         font-size: 28px;
