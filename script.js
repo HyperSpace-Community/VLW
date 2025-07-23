@@ -48,26 +48,15 @@ document.addEventListener('DOMContentLoaded', function() {
         easing: 'easeInOutSine'
     });
 
-    // Enhanced Gravitational Orbital System
+    // Realistic Solar System Physics
     const productBalls = document.querySelectorAll('.product-ball');
     const ballPhysics = [];
     const sunCore = document.querySelector('.core-inner');
     
-    // Advanced physics constants
-    const GRAVITATIONAL_CONSTANT = 1.2;
-    const SUN_MASS = 150;
-    const BALL_MASS = 1;
-    
-    // Energy classification thresholds
-    const LOW_ENERGY_THRESHOLD = 0.3;
-    const MEDIUM_ENERGY_THRESHOLD = 0.6;
-    const HIGH_ENERGY_THRESHOLD = 1.0;
-    const EXTREME_ENERGY_THRESHOLD = 1.5;
-    
-    // Physics simulation parameters
-    const TIME_STEP = 1 / 60; // 60 FPS simulation
-    const FORCE_DAMPENING = 0.98;
-    const VELOCITY_SMOOTHING = 0.95;
+    // Simple orbital physics constants
+    const ORBITAL_SPEED = 0.02; // Base orbital speed
+    const SLINGSHOT_DISTANCE = 60; // Distance for slingshot effect
+    const SLINGSHOT_BOOST = 1.5; // Speed multiplier during slingshot
     
     // Get responsive scaling factor based on screen size
     function getResponsiveScale() {
@@ -79,126 +68,54 @@ document.addEventListener('DOMContentLoaded', function() {
         return 1.0;                              // Extra large screens
     }
 
-    // Initialize enhanced physics objects for each ball
+    // Initialize simple circular orbits
     productBalls.forEach((ball, index) => {
         const scale = getResponsiveScale();
         
-        // Enhanced multi-dimensional orbital characteristics for each ball (responsive)
-        const semiMajorAxis = (index === 0 ? 140 : 190) * scale; // LATMO closer, MAi farther
-        const eccentricity = index === 0 ? 0.25 : 0.35; // More pronounced elliptical orbits
-        const orbitalPeriod = index === 0 ? 6 : 9; // Faster, more dynamic speeds
-        const inclination = index === 0 ? Math.PI * 0.15 : Math.PI * 0.25; // Orbital tilt angles
-        const argumentOfPeriapsis = index * Math.PI * 0.7; // Orientation of ellipse
+        // Simple orbital parameters
+        const orbitRadius = (index === 0 ? 100 : 150) * scale; // LATMO closer, MAi farther
+        const baseSpeed = ORBITAL_SPEED * (index === 0 ? 1.2 : 0.8); // Inner planet faster
         
-        // Enhanced 4-dimensional orbital parameters (WXYZ) with more variety
-        const orbitalPlanes = [
-            { 
-                name: 'XY_Enhanced', 
-                xAxis: 1, yAxis: 1, zAxis: 0.3, wAxis: 0.1, 
-                tilt: 0,
-                rotationSpeed: 0.02,
-                precessionRate: 0.001
-            },
-            { 
-                name: 'XZ_Dynamic', 
-                xAxis: 0.8, yAxis: 0.2, zAxis: 1, wAxis: 0.3, 
-                tilt: Math.PI/4,
-                rotationSpeed: -0.015,
-                precessionRate: 0.0008
-            },
-            { 
-                name: 'YZ_Tilted', 
-                xAxis: 0.1, yAxis: 1, zAxis: 0.8, wAxis: 0.2, 
-                tilt: Math.PI/3,
-                rotationSpeed: 0.025,
-                precessionRate: 0.0012
-            },
-            { 
-                name: 'XW_Complex', 
-                xAxis: 1, yAxis: 0.4, zAxis: 0.2, wAxis: 0.8, 
-                tilt: Math.PI/6,
-                rotationSpeed: -0.01,
-                precessionRate: 0.0006
-            }
-        ];
-        
-        const plane = orbitalPlanes[index % orbitalPlanes.length];
-        const initialAngle = (index * Math.PI * 1.3) + (Math.random() * Math.PI * 0.2); // More varied start positions
-        
-        // Calculate initial position in 4D space (responsive)
-        const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
-        const focus = semiMajorAxis * eccentricity;
-        
-        // Base elliptical coordinates (scaled for device)
-        const baseX = semiMajorAxis * Math.cos(initialAngle) + focus;
-        const baseY = semiMinorAxis * Math.sin(initialAngle);
-        const baseZ = semiMajorAxis * Math.sin(initialAngle + plane.tilt) * 0.8; // Enhanced Z-depth component
-        const baseW = semiMajorAxis * Math.cos(initialAngle + plane.tilt) * 0.4; // W-axis component
-        
-        // Apply 4D transformation matrix
-        const initialX = baseX * plane.xAxis + baseZ * plane.zAxis * 0.7 + baseW * plane.wAxis * 0.4;
-        const initialY = baseY * plane.yAxis + baseZ * plane.zAxis * 0.5 + baseW * plane.wAxis * 0.3;
-        const initialZ = baseZ * 0.9 + baseW * 0.6; // Enhanced Z-depth for behind-sun positioning
-        const initialW = baseW * 0.5; // 4th dimension component
+        // Start at different positions
+        const initialAngle = index * Math.PI; // Start on opposite sides
         
         const ballData = {
             element: ball,
             
-            // Enhanced orbital parameters
+            // Orbital state
             angle: initialAngle,
-            semiMajorAxis: semiMajorAxis,
-            eccentricity: eccentricity,
-            orbitalPeriod: orbitalPeriod,
-            angularVelocity: (2 * Math.PI) / (orbitalPeriod * 60),
-            baseAngularVelocity: (2 * Math.PI) / (orbitalPeriod * 60),
-            inclination: inclination,
-            argumentOfPeriapsis: argumentOfPeriapsis,
+            orbitRadius: orbitRadius,
+            baseSpeed: baseSpeed,
+            currentSpeed: baseSpeed,
             
-            // 4D orbital plane with enhanced dynamics
-            orbitalPlane: plane,
-            planeRotation: 0, // Additional rotation within the plane
-            precessionAngle: 0, // Orbital precession for realistic motion
-            nodeRotation: Math.random() * Math.PI * 2, // Ascending node rotation
+            // Slingshot state
+            slingshotActive: false,
+            slingshotCooldown: 0,
             
-            // Advanced 4D physics state
-            position: { x: initialX, y: initialY, z: initialZ, w: initialW },
-            velocity: { x: 0, y: 0, z: 0, w: 0 },
-            acceleration: { x: 0, y: 0, z: 0, w: 0 },
-            force: { x: 0, y: 0, z: 0, w: 0 },
-            radius: Math.sqrt(initialX * initialX + initialY * initialY + initialZ * initialZ),
-            targetRadius: semiMajorAxis,
-            isHovered: false,
-            
-            // Physical properties
-            mass: BALL_MASS,
-            collisionRadius: 25,
-            kineticEnergy: 0,
-            potentialEnergy: 0,
-            totalEnergy: 0,
-            energyLevel: 'low', // low, medium, high, extreme
-            
-            // Gravitational interactions
-            gravitationalForces: [],
-            inGravitationalField: false,
-            fieldStrength: 0,
-            
-            // Slingshot mechanics
-            solarSlingshot: false,
-            ballSlingshot: false,
-            slingshotEnergy: 0,
-            slingshotType: 'none', // none, solar, planetary, combined
-            
-            // Visual state management
-            visualState: {
-                scale: 1,
-                glow: { radius: 20, opacity: 0.5, color: index === 0 ? [99, 232, 241] : [16, 185, 129] },
-                trail: { opacity: 0, length: 0 }
-            }
+            // Visual properties
+            scale: 1,
+            glow: { 
+                radius: 20, 
+                opacity: 0.5, 
+                color: index === 0 ? [99, 232, 241] : [16, 185, 129] 
+            },
+            isHovered: false
         };
         
         ballPhysics.push(ballData);
         
-        // Original hover functionality with enhanced physics
+        // Calculate initial position
+        const x = ballData.orbitRadius * Math.cos(ballData.angle);
+        const y = ballData.orbitRadius * Math.sin(ballData.angle);
+        
+        // Set initial position immediately for visibility
+        ballData.element.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+        ballData.element.style.opacity = 1;
+        ballData.element.style.zIndex = 10;
+        
+        console.log(`Initialized planet ${index}: radius=${ballData.orbitRadius}, angle=${ballData.angle}, pos(${x}, ${y})`);
+        
+        // Original hover functionality
         ball.addEventListener('mouseenter', function() {
             ballData.isHovered = true;
             ball.style.cursor = 'pointer';
@@ -226,380 +143,84 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    function updateAdvancedPhysicsSystem() {
-        const currentTime = Date.now();
-        
-        // Reset forces for this frame
-        ballPhysics.forEach(ball => {
-            ball.force = { x: 0, y: 0, z: 0, w: 0 };
-            ball.gravitationalForces = [];
-            ball.slingshotEnergy = 0; // Reset slingshot energy each frame
-        });
-        
-        // Calculate all gravitational forces
-        calculateGravitationalForces();
-        
-        // Update physics for each ball
-        ballPhysics.forEach((ball, index) => {
-            if (!ball.isHovered) {
-                updateBallPhysics(ball, currentTime);
-                calculateEnergyState(ball);
-                classifyEnergyLevel(ball);
-            }
-            
-            // Apply energy-responsive visual effects
-            applyEnergyResponsiveVisuals(ball, index);
-            
-            // Calculate distance from viewer for perspective scaling
-            // Use Z-position as primary depth indicator (negative Z = behind sun = farther)
-            const distanceFromViewer = Math.sqrt(
-                ball.position.x * ball.position.x + 
-                ball.position.y * ball.position.y + 
-                Math.abs(ball.position.z) * Math.abs(ball.position.z)
-            );
-            
-            // Enhanced distance calculation with Z-depth priority
-            const zDepthFactor = ball.position.z < 0 ? 1.5 : 1.0; // Behind sun = farther
-            const effectiveDistance = distanceFromViewer * zDepthFactor;
-            
-            // Distance-based scaling with reasonable limits
-            const baseDistance = ball.semiMajorAxis;
-            const distanceRatio = baseDistance / effectiveDistance;
-            const distanceScale = Math.max(0.6, Math.min(1.4, distanceRatio)); // More conservative scaling
-            
-            // Ensure balls never get larger than sun (sun core is 120px, ball base is 30px)
-            // Maximum allowed scale is 3.0x (90px) to stay smaller than sun
-            const maxAllowedScale = 3.0;
-            const finalScale = Math.min(maxAllowedScale, ball.visualState.scale * distanceScale);
-            
-            // Apply 4D transform with distance-based scaling
-            ball.element.style.transform = `translate(${ball.position.x}px, ${ball.position.y * 0.6}px) scale(${finalScale})`;
-            
-            // Enhanced depth-based opacity for behind-sun positioning (no blur)
-            const depthOpacity = Math.max(0.2, 1 - Math.abs(ball.position.z) * 0.001);
-            const wOpacity = Math.max(0.3, 1 - Math.abs(ball.position.w) * 0.0008);
-            
-            // Z-index management for proper layering (negative Z means behind sun)
-            const zIndex = ball.position.z < 0 ? 5 : 15; // Behind sun = lower z-index
-            ball.element.style.zIndex = zIndex;
-            ball.element.style.opacity = depthOpacity * wOpacity;
-        });
-        
-        requestAnimationFrame(updateAdvancedPhysicsSystem);
-    }
-    
-    // Kepler's equation solver for realistic elliptical orbits
-    function solveKeplersEquation(meanAnomaly, eccentricity, tolerance = 1e-8) {
-        let eccentricAnomaly = meanAnomaly;
-        let delta = 1;
-        let iterations = 0;
-        const maxIterations = 20;
-        
-        // Newton-Raphson method to solve Kepler's equation
-        while (Math.abs(delta) > tolerance && iterations < maxIterations) {
-            const f = eccentricAnomaly - eccentricity * Math.sin(eccentricAnomaly) - meanAnomaly;
-            const df = 1 - eccentricity * Math.cos(eccentricAnomaly);
-            delta = f / df;
-            eccentricAnomaly -= delta;
-            iterations++;
-        }
-        
-        return eccentricAnomaly;
-    }
-    
-    function calculateGravitationalForces() {
-        // Solar gravitational forces in 4D space
-        ballPhysics.forEach(ball => {
-            const distanceToSun = Math.sqrt(
-                ball.position.x * ball.position.x + 
-                ball.position.y * ball.position.y + 
-                ball.position.z * ball.position.z * 0.5 +
-                ball.position.w * ball.position.w * 0.3
-            );
-            
-            if (distanceToSun > 0) {
-                // Gravitational force towards sun in 4D
-                const solarForce = (GRAVITATIONAL_CONSTANT * SUN_MASS * ball.mass) / (distanceToSun * distanceToSun);
-                const forceDirection = { 
-                    x: -ball.position.x / distanceToSun, 
-                    y: -ball.position.y / distanceToSun,
-                    z: -ball.position.z / distanceToSun * 0.5,
-                    w: -ball.position.w / distanceToSun * 0.3
-                };
+    function updateSimpleOrbitalSystem() {
+        ballPhysics.forEach((planet, index) => {
+            if (!planet.isHovered) {
+                // Decrease slingshot cooldown
+                if (planet.slingshotCooldown > 0) {
+                    planet.slingshotCooldown--;
+                }
                 
-                ball.force.x += solarForce * forceDirection.x;
-                ball.force.y += solarForce * forceDirection.y;
-                ball.force.z += solarForce * forceDirection.z;
-                ball.force.w += solarForce * forceDirection.w;
+                // Update orbital angle
+                planet.angle += planet.currentSpeed;
                 
-                // Track solar interaction
-                const solarFieldStrength = solarForce / (SUN_MASS * ball.mass);
-                ball.fieldStrength = solarFieldStrength;
-                ball.inGravitationalField = distanceToSun < 150;
+                // Calculate current position
+                const x = planet.orbitRadius * Math.cos(planet.angle);
+                const y = planet.orbitRadius * Math.sin(planet.angle);
                 
-                // Solar slingshot detection
-                if (distanceToSun < 100 && solarFieldStrength > 0.8) {
-                    ball.solarSlingshot = true;
-                    ball.slingshotEnergy = solarFieldStrength * distanceToSun;
-                    ball.slingshotType = ball.ballSlingshot ? 'combined' : 'solar';
-                } else {
-                    ball.solarSlingshot = false;
-                    if (ball.slingshotType === 'solar') ball.slingshotType = 'none';
+                // Check for slingshot effects
+                checkSlingshotEffects(planet, index);
+                
+                // Apply slingshot speed boost
+                if (planet.slingshotActive && planet.slingshotCooldown === 0) {
+                    planet.currentSpeed = planet.baseSpeed * SLINGSHOT_BOOST;
+                    planet.slingshotCooldown = 60; // 1 second cooldown at 60fps
+                } else if (!planet.slingshotActive) {
+                    // Gradually return to normal speed
+                    planet.currentSpeed = planet.currentSpeed * 0.98 + planet.baseSpeed * 0.02;
+                }
+                
+                // Apply visual effects during slingshot
+                const scale = planet.slingshotActive ? 1.3 : 1.0;
+                const glowIntensity = planet.slingshotActive ? 1.5 : 1.0;
+                
+                // Update position
+                planet.element.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+                planet.element.style.opacity = 1;
+                planet.element.style.zIndex = 10;
+                
+                // Update glow effect
+                const balls = planet.element.querySelector('.ball-content');
+                if (balls) {
+                    const baseColor = planet.glow.color;
+                    const glowColor = `rgba(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]}, ${planet.glow.opacity * glowIntensity})`;
+                    const glowRadius = planet.glow.radius * glowIntensity;
+                    balls.style.boxShadow = `0 0 ${glowRadius}px ${glowColor}`;
                 }
             }
         });
         
-        // Ball-to-ball gravitational interactions in 4D space
-        for (let i = 0; i < ballPhysics.length; i++) {
-            for (let j = i + 1; j < ballPhysics.length; j++) {
-                const ball1 = ballPhysics[i];
-                const ball2 = ballPhysics[j];
+        requestAnimationFrame(updateSimpleOrbitalSystem);
+    }
+    
+    function checkSlingshotEffects(planet, planetIndex) {
+        planet.slingshotActive = false;
+        
+        // Check distance to sun (center)
+        const distanceToSun = planet.orbitRadius;
+        if (distanceToSun < SLINGSHOT_DISTANCE) {
+            planet.slingshotActive = true;
+        }
+        
+        // Check distance to other planets
+        ballPhysics.forEach((otherPlanet, otherIndex) => {
+            if (planetIndex !== otherIndex) {
+                const x1 = planet.orbitRadius * Math.cos(planet.angle);
+                const y1 = planet.orbitRadius * Math.sin(planet.angle);
+                const x2 = otherPlanet.orbitRadius * Math.cos(otherPlanet.angle);
+                const y2 = otherPlanet.orbitRadius * Math.sin(otherPlanet.angle);
                 
-                const dx = ball2.position.x - ball1.position.x;
-                const dy = ball2.position.y - ball1.position.y;
-                const dz = ball2.position.z - ball1.position.z;
-                const dw = ball2.position.w - ball1.position.w;
-                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz * 0.5 + dw * dw * 0.3);
+                const distance = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
                 
-                if (distance > 0 && distance < 120) {
-                    // Mutual gravitational force in 4D
-                    const mutualForce = (GRAVITATIONAL_CONSTANT * ball1.mass * ball2.mass) / (distance * distance);
-                    const forceX = mutualForce * (dx / distance);
-                    const forceY = mutualForce * (dy / distance);
-                    const forceZ = mutualForce * (dz / distance) * 0.5;
-                    const forceW = mutualForce * (dw / distance) * 0.3;
-                    
-                    // Apply forces
-                    ball1.force.x += forceX;
-                    ball1.force.y += forceY;
-                    ball1.force.z += forceZ;
-                    ball1.force.w += forceW;
-                    ball2.force.x -= forceX;
-                    ball2.force.y -= forceY;
-                    ball2.force.z -= forceZ;
-                    ball2.force.w -= forceW;
-                    
-                    // Slingshot mechanics
-                    if (distance < 80) {
-                        const slingshotIntensity = (80 - distance) / 80;
-                        const energyTransfer = slingshotIntensity * mutualForce;
-                        
-                        ball1.ballSlingshot = true;
-                        ball2.ballSlingshot = true;
-                        ball1.slingshotEnergy = Math.max(ball1.slingshotEnergy, energyTransfer);
-                        ball2.slingshotEnergy = Math.max(ball2.slingshotEnergy, energyTransfer);
-                        ball1.slingshotType = ball1.solarSlingshot ? 'combined' : 'planetary';
-                        ball2.slingshotType = ball2.solarSlingshot ? 'combined' : 'planetary';
-                    } else {
-                        ball1.ballSlingshot = false;
-                        ball2.ballSlingshot = false;
-                        if (ball1.slingshotType === 'planetary') ball1.slingshotType = 'none';
-                        if (ball2.slingshotType === 'planetary') ball2.slingshotType = 'none';
-                    }
+                if (distance < SLINGSHOT_DISTANCE) {
+                    planet.slingshotActive = true;
                 }
             }
-        }
+        });
     }
     
-    function updateBallPhysics(ball, currentTime) {
-        // Update orbital angle - this is the primary motion driver
-        ball.angle += ball.angularVelocity;
-        
-        // Update precession and node rotation for more realistic orbital dynamics
-        ball.precessionAngle += ball.orbitalPlane.precessionRate;
-        ball.nodeRotation += ball.orbitalPlane.rotationSpeed;
-        ball.planeRotation += ball.angularVelocity * 0.2; // Reduced for smoother motion
-        
-        // Enhanced elliptical orbit calculations using eccentric anomaly
-        const eccentricAnomaly = solveKeplersEquation(ball.angle, ball.eccentricity);
-        const trueAnomaly = 2 * Math.atan2(
-            Math.sqrt(1 + ball.eccentricity) * Math.sin(eccentricAnomaly / 2),
-            Math.sqrt(1 - ball.eccentricity) * Math.cos(eccentricAnomaly / 2)
-        );
-        
-        // Calculate orbital radius using true anomaly
-        const orbitalRadius = ball.semiMajorAxis * (1 - ball.eccentricity * ball.eccentricity) / 
-                             (1 + ball.eccentricity * Math.cos(trueAnomaly));
-        
-        // Calculate position in orbital plane
-        const cosTA = Math.cos(trueAnomaly + ball.argumentOfPeriapsis);
-        const sinTA = Math.sin(trueAnomaly + ball.argumentOfPeriapsis);
-        
-        // Enhanced elliptical coordinates with orbital mechanics
-        const baseX = orbitalRadius * cosTA;
-        const baseY = orbitalRadius * sinTA * Math.cos(ball.inclination);
-        const baseZ = orbitalRadius * sinTA * Math.sin(ball.inclination);
-        const baseW = orbitalRadius * Math.cos(trueAnomaly + ball.precessionAngle) * 0.3;
-        
-        // Apply 4D transformation with enhanced dynamics
-        const plane = ball.orbitalPlane;
-        const cosNode = Math.cos(ball.nodeRotation);
-        const sinNode = Math.sin(ball.nodeRotation);
-        
-        // Rotate around ascending node
-        const rotatedX = baseX * cosNode - baseY * sinNode;
-        const rotatedY = baseX * sinNode + baseY * cosNode;
-        
-        // Apply 4D transformation based on orbital plane with precession
-        ball.position.x = rotatedX * plane.xAxis + baseZ * plane.zAxis * 0.8 + baseW * plane.wAxis * 0.5;
-        ball.position.y = rotatedY * plane.yAxis + baseZ * plane.zAxis * 0.6 + baseW * plane.wAxis * 0.4;
-        ball.position.z = baseZ * 1.1 + baseW * 0.8 + Math.sin(ball.precessionAngle) * orbitalRadius * 0.2;
-        ball.position.w = baseW * 0.7 + Math.cos(ball.precessionAngle + ball.nodeRotation) * orbitalRadius * 0.15;
-        
-        // Calculate 4D radius for distance calculations
-        ball.radius = Math.sqrt(
-            ball.position.x * ball.position.x + 
-            ball.position.y * ball.position.y + 
-            ball.position.z * ball.position.z * 0.5
-        );
-        
-        // Apply enhanced Kepler's second law with realistic velocity variation
-        if (orbitalRadius > 0) {
-            // Calculate velocity based on vis-viva equation
-            const specificOrbitalEnergy = -(GRAVITATIONAL_CONSTANT * SUN_MASS) / (2 * ball.semiMajorAxis);
-            const velocityMagnitude = Math.sqrt(2 * ((GRAVITATIONAL_CONSTANT * SUN_MASS) / orbitalRadius - (-specificOrbitalEnergy)));
-            
-            // Convert to angular velocity with enhanced variation
-            const keplerFactor = Math.sqrt(ball.semiMajorAxis / orbitalRadius) * 1.2;
-            ball.angularVelocity = ball.baseAngularVelocity * keplerFactor;
-            
-            // Add slight velocity fluctuations for more dynamic motion
-            const fluctuation = Math.sin(currentTime * 0.001 + ball.angle * 3) * 0.05;
-            ball.angularVelocity *= (1 + fluctuation);
-        }
-        
-        // Apply slingshot velocity boosts
-        if (ball.solarSlingshot) {
-            ball.angularVelocity *= (1 + ball.slingshotEnergy * 0.3);
-        }
-        if (ball.ballSlingshot) {
-            ball.angularVelocity *= (1 + ball.slingshotEnergy * 0.2);
-        }
-        
-        // Apply enhanced 4D gravitational perturbations with smoother variations
-        const timeScale = currentTime * 0.0005;
-        const orbitInfluence = (ball.fieldStrength || 0) * 0.3;
-        
-        // Multi-layered perturbations for more natural orbital variations
-        const primaryPerturbX = Math.sin(ball.angle * 2.3 + timeScale) * orbitInfluence;
-        const primaryPerturbY = Math.cos(ball.angle * 1.7 + timeScale * 1.3) * orbitInfluence;
-        const primaryPerturbZ = Math.sin(ball.angle * 3.1 + ball.precessionAngle + timeScale * 0.8) * orbitInfluence * 0.7;
-        const primaryPerturbW = Math.cos(ball.angle * 2.9 + ball.nodeRotation + timeScale * 0.6) * orbitInfluence * 0.5;
-        
-        // Secondary harmonic perturbations
-        const secondaryPerturbX = Math.sin(ball.angle * 7.2 + timeScale * 2.1) * orbitInfluence * 0.3;
-        const secondaryPerturbY = Math.cos(ball.angle * 5.8 + timeScale * 1.9) * orbitInfluence * 0.25;
-        const secondaryPerturbZ = Math.sin(ball.angle * 9.1 + ball.precessionAngle * 2 + timeScale * 1.2) * orbitInfluence * 0.2;
-        
-        // Apply smoothed perturbations
-        ball.position.x += primaryPerturbX + secondaryPerturbX;
-        ball.position.y += primaryPerturbY + secondaryPerturbY;
-        ball.position.z += primaryPerturbZ + secondaryPerturbZ;
-        ball.position.w += primaryPerturbW;
-        
-        // Apply forces for advanced physics interactions in 4D
-        ball.acceleration.x = ball.force.x / ball.mass;
-        ball.acceleration.y = ball.force.y / ball.mass;
-        ball.acceleration.z = ball.force.z / ball.mass;
-        ball.acceleration.w = ball.force.w / ball.mass;
-        
-        ball.velocity.x += ball.acceleration.x * TIME_STEP;
-        ball.velocity.y += ball.acceleration.y * TIME_STEP;
-        ball.velocity.z += ball.acceleration.z * TIME_STEP;
-        ball.velocity.w += ball.acceleration.w * TIME_STEP;
-        
-        // Apply small velocity corrections to position
-        ball.position.x += ball.velocity.x * TIME_STEP * 0.1;
-        ball.position.y += ball.velocity.y * TIME_STEP * 0.1;
-        ball.position.z += ball.velocity.z * TIME_STEP * 0.05;
-        ball.position.w += ball.velocity.w * TIME_STEP * 0.03;
-        
-        // Dampen velocity for stability
-        ball.velocity.x *= VELOCITY_SMOOTHING;
-        ball.velocity.y *= VELOCITY_SMOOTHING;
-        ball.velocity.z *= VELOCITY_SMOOTHING;
-        ball.velocity.w *= VELOCITY_SMOOTHING;
-    }
-    
-    function calculateEnergyState(ball) {
-        // Kinetic energy
-        const velocityMagnitude = Math.sqrt(ball.velocity.x * ball.velocity.x + ball.velocity.y * ball.velocity.y);
-        ball.kineticEnergy = 0.5 * ball.mass * ball.angularVelocity * ball.angularVelocity * ball.radius * ball.radius;
-        
-        // Gravitational potential energy
-        ball.potentialEnergy = -(GRAVITATIONAL_CONSTANT * SUN_MASS * ball.mass) / ball.radius;
-        
-        // Total energy
-        ball.totalEnergy = ball.kineticEnergy + ball.potentialEnergy + ball.slingshotEnergy;
-    }
-    
-    function classifyEnergyLevel(ball) {
-        const normalizedEnergy = Math.abs(ball.totalEnergy) / (ball.mass * GRAVITATIONAL_CONSTANT);
-        
-        if (normalizedEnergy < LOW_ENERGY_THRESHOLD) {
-            ball.energyLevel = 'low';
-        } else if (normalizedEnergy < MEDIUM_ENERGY_THRESHOLD) {
-            ball.energyLevel = 'medium';
-        } else if (normalizedEnergy < HIGH_ENERGY_THRESHOLD) {
-            ball.energyLevel = 'high';
-        } else {
-            ball.energyLevel = 'extreme';
-        }
-    }
-    
-    function applyEnergyResponsiveVisuals(ball, index) {
-        const baseColor = ball.visualState.glow.color;
-        const energyFactor = Math.abs(ball.totalEnergy) / (ball.mass * GRAVITATIONAL_CONSTANT * 2);
-        
-        // Energy-responsive scaling (more conservative to work with distance scaling)
-        switch (ball.energyLevel) {
-            case 'low':
-                ball.visualState.scale = ball.isHovered ? 1.05 : 1.0;
-                ball.visualState.glow.radius = 12 + energyFactor * 3;
-                ball.visualState.glow.opacity = 0.3 + energyFactor * 0.15;
-                break;
-                
-            case 'medium':
-                ball.visualState.scale = ball.isHovered ? 1.08 : 1.02 + energyFactor * 0.05;
-                ball.visualState.glow.radius = 15 + energyFactor * 8;
-                ball.visualState.glow.opacity = 0.4 + energyFactor * 0.2;
-                break;
-                
-            case 'high':
-                ball.visualState.scale = ball.isHovered ? 1.12 : 1.05 + energyFactor * 0.08;
-                ball.visualState.glow.radius = 18 + energyFactor * 12;
-                ball.visualState.glow.opacity = 0.5 + energyFactor * 0.25;
-                break;
-                
-            case 'extreme':
-                ball.visualState.scale = ball.isHovered ? 1.15 : 1.08 + energyFactor * 0.1;
-                ball.visualState.glow.radius = 22 + energyFactor * 18;
-                ball.visualState.glow.opacity = 0.6 + energyFactor * 0.3;
-                break;
-        }
-        
-        // Apply visual effects with original colors preserved
-        const ballContent = ball.element.querySelector('.ball-content');
-        if (ballContent) {
-            const glowColor = `rgba(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]}, ${ball.visualState.glow.opacity})`;
-            const glowRadius = ball.visualState.glow.radius;
-            
-            // Multi-layered glow for high energy states (no blur)
-            let boxShadow = `0 0 ${glowRadius}px ${glowColor}`;
-            if (ball.energyLevel === 'high' || ball.energyLevel === 'extreme') {
-                boxShadow += `, 0 0 ${glowRadius * 0.6}px ${glowColor}`;
-            }
-            if (ball.energyLevel === 'extreme') {
-                boxShadow += `, 0 0 ${glowRadius * 1.3}px rgba(255, 255, 255, ${ball.visualState.glow.opacity * 0.3})`;
-            }
-            
-            ballContent.style.boxShadow = boxShadow;
-            // Remove brightness, saturation, contrast, and blur filters to preserve original colors
-            ballContent.style.filter = 'none';
-        }
-    }
-    
-    updateAdvancedPhysicsSystem();
+    // Start the simple orbital system with slingshot physics
+    updateSimpleOrbitalSystem();
 
     // Handle window resize for responsive orbital system
     let resizeTimeout;
@@ -609,41 +230,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Recalculate orbital parameters for new screen size
             const newScale = getResponsiveScale();
             
-            ballPhysics.forEach((ball, index) => {
-                // Update orbital parameters with new scale
-                ball.semiMajorAxis = (index === 0 ? 140 : 190) * newScale;
-                ball.targetRadius = ball.semiMajorAxis;
-                
-                // Recalculate position based on enhanced orbital mechanics
-                const eccentricAnomaly = solveKeplersEquation(ball.angle, ball.eccentricity);
-                const trueAnomaly = 2 * Math.atan2(
-                    Math.sqrt(1 + ball.eccentricity) * Math.sin(eccentricAnomaly / 2),
-                    Math.sqrt(1 - ball.eccentricity) * Math.cos(eccentricAnomaly / 2)
-                );
-                
-                const orbitalRadius = ball.semiMajorAxis * (1 - ball.eccentricity * ball.eccentricity) / 
-                                     (1 + ball.eccentricity * Math.cos(trueAnomaly));
-                
-                const cosTA = Math.cos(trueAnomaly + ball.argumentOfPeriapsis);
-                const sinTA = Math.sin(trueAnomaly + ball.argumentOfPeriapsis);
-                
-                const baseX = orbitalRadius * cosTA;
-                const baseY = orbitalRadius * sinTA * Math.cos(ball.inclination);
-                const baseZ = orbitalRadius * sinTA * Math.sin(ball.inclination);
-                const baseW = orbitalRadius * Math.cos(trueAnomaly + ball.precessionAngle) * 0.3;
-                
-                // Apply enhanced transformation
-                const plane = ball.orbitalPlane;
-                const cosNode = Math.cos(ball.nodeRotation);
-                const sinNode = Math.sin(ball.nodeRotation);
-                
-                const rotatedX = baseX * cosNode - baseY * sinNode;
-                const rotatedY = baseX * sinNode + baseY * cosNode;
-                
-                ball.position.x = rotatedX * plane.xAxis + baseZ * plane.zAxis * 0.8 + baseW * plane.wAxis * 0.5;
-                ball.position.y = rotatedY * plane.yAxis + baseZ * plane.zAxis * 0.6 + baseW * plane.wAxis * 0.4;
-                ball.position.z = baseZ * 1.1 + baseW * 0.8;
-                ball.position.w = baseW * 0.7;
+            ballPhysics.forEach((planet, index) => {
+                // Update orbital radius with new scale
+                planet.orbitRadius = (index === 0 ? 100 : 150) * newScale;
             });
         }, 250); // Debounce resize events
     });
