@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LATMO - VoidLabs Automation Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="tech-pattern"></div>
+    
+    <!-- LATMO Product Page -->
+    <div class="page-container active">
+        <a href="index.html" class="back-button">
+            ← Back to Home
+        </a>
+        
+        <section class="product-hero">
+            <div class="product-hero-content">
+                <h1>LATMO v1</h1>
+                <div class="version">Version v1 1.0.0</div>
+                <p>Advanced automation framework designed to run on any device with any LLM. Cross-platform architecture enables intelligent task management and seamless integration capabilities.</p>
+                <div class="product-actions">
+                    <button class="btn btn-primary">Get Started</button>
+                    <button class="btn btn-secondary">View Documentation</button>
+                    <button class="btn btn-secondary">Download SDK</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <div class="demo-container">
+                <h2>See LATMO in Action</h2>
+                <p>Watch how LATMO transforms complex workflows into streamlined, automated processes.</p>
+                <div class="video-container">
+                    <video id="latmoVideo" preload="metadata" poster="">
+                        <source src="Sequence 01_1.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="custom-controls">
+                        <button class="play-pause-btn" id="playPauseBtn" type="button">
+                            <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                            </svg>
+                        </button>
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span>
+                            <span>/</span>
+                            <span id="duration">0:00</span>
+                        </div>
+                        <div class="progress-container" id="progressContainer">
+                            <div class="progress-bar" id="progressBar">
+                                <div class="progress-fill" id="progressFill"></div>
+                                <div class="progress-handle" id="progressHandle"></div>
+                            </div>
+                        </div>
+                        <div class="volume-container">
+                            <button class="volume-btn" id="volumeBtn" type="button">
+                                <svg class="volume-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                </svg>
+                            </button>
+                            <div class="volume-slider" id="volumeSlider">
+                                <div class="volume-fill" id="volumeFill"></div>
+                                <div class="volume-handle" id="volumeHandle"></div>
+                            </div>
+                        </div>
+                        <button class="fullscreen-btn" id="fullscreenBtn" type="button">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="feature-section">
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Universal Model Compatibility</h3>
+                    <p>Compatible with a wide range of language models from small local models to cloud LLMs.</p>
+                    <ul class="feature-list">
+                        <li>SLMs from 1.5B parameter models</li>
+                        <li>Local LLM integration</li>
+                        <li>Cloud-based LLM support</li>
+                        <li>Any LLM compatibility</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Cross-Platform Architecture</h3>
+                    <p>Designed to run on any device with flexible deployment options and lightweight resource usage.</p>
+                    <ul class="feature-list">
+                        <li>Runs on any device architecture</li>
+                        <li>Lightweight resource footprint</li>
+                        <li>Flexible deployment options</li>
+                        <li>Cross-platform compatibility</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Modern Protocol Support</h3>
+                    <p>Built with cutting-edge protocols and opensource libraries for maximum flexibility and transparency.</p>
+                    <ul class="feature-list">
+                        <li>MCP (Model Context Protocol) compatible</li>
+                        <li>Built with opensource libraries</li>
+                        <li>RESTful and GraphQL APIs</li>
+                        <li>Custom integration support</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Intelligent Automation</h3>
+                    <p>AI-powered workflow optimization that learns and adapts to your business processes.</p>
+                    <ul class="feature-list">
+                        <li>Machine learning algorithms</li>
+                        <li>Predictive analytics</li>
+                        <li>Anomaly detection</li>
+                        <li>Self-healing systems</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="specs-section">
+            <div class="specs-container">
+                <h2>Technical Specifications</h2>
+                <p>Cross-platform architecture designed to run on any device with compatibility across all LLMs.</p>
+                
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <div class="spec-label">SLM Compatibility</div>
+                        <div class="spec-value">1.5B+ params*</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Protocol Support</div>
+                        <div class="spec-value">MCP Compatible</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Model Support</div>
+                        <div class="spec-value">Any LLM</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Architecture</div>
+                        <div class="spec-value">Cross-Platform</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Device Compatibility</div>
+                        <div class="spec-value">Any Device</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-label">Development Status</div>
+                        <div class="spec-value">In Development</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="footer-links">
+                <a href="#about">About</a>
+                <a href="#careers">Careers</a>
+                <a href="#blog">Blog</a>
+                <a href="#support">Support</a>
+            </div>
+            <p>&copy; 2024 VoidLabs. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
