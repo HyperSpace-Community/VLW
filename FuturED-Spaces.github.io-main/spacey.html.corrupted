@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spacey - AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        space: ['Space Grotesk', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .message {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #6366f1;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.7);
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <script>
+        // Check if user is logged in
+        if (!sessionStorage.getItem('userLoggedIn')) {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <div
+        class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900/20 via-slate-900/20 to-slate-900/30 pointer-events-none">
+    </div>
+
+    <div class="w-full max-w-6xl mx-auto p-4 relative z-10">
+        <!-- Header -->
+        <div class="glass-morphism rounded-2xl p-6 mb-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-300 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </a>
+                    <h1
+                        class="text-3xl font-bold bg-gradient-to-r from-violet-400 to-purple-400 text-transparent bg-clip-text">
+                        Spacey AI Assistant
+                    </h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="clearChat()"
+                        class="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 transition-all">
+                        Clear Chat
+                    </button>
+                    <button onclick="saveChat()"
+                        class="px-4 py-2 rounded-lg bg-green-500/20 hover:bg-green-500/30 text-green-300 transition-all">
+                        Save Chat
+                    </button>
+                    <button onclick="toggleDataPanel()"
+                        class="px-4 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 transition-all">
+                        Database
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <!-- Chat Area -->
+            <div class="lg:col-span-3">
+                <div class="glass-morphism rounded-2xl p-6">
+                    <!-- Chat Messages -->
+                    <div id="chatContainer" class="chat-container custom-scrollbar mb-4 space-y-4">
+                        <div class="message">
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gradient-to-r from-violet-400 to-purple-400 flex items-center justify-center text-white font-bold">
+                                    S
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-white/10 rounded-lg p-4">
+                                        <p class="text-gray-200">
+                                            Hello! I'm Spacey, your AI assistant with full access to your FuturED
+                                            database.
+                                            I can help you with:
+                                        </p>
+                                        <ul class="list-disc list-inside mt-2 text-gray-300 space-y-1">
+                                            <li>Creating, reading, updating, and deleting notes in Notex</li>
+                                            <li>Searching through your whiteboard drawings</li>
+                                            <li>Managing your educational resources</li>
+                                            <li>Answering questions using Perplexity AI</li>
+                                        </ul>
+                                        <p class="text-gray-300 mt-3">
+                                            Try commands like: "Create a new note about Python", "Search my notes for
+                                            math",
+                                            "Delete the note titled 'Old Project'", or ask me anything!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="flex gap-3">
+                        <input type="text" id="messageInput" placeholder="Ask me anything or use commands..."
+                            class="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-purple-400 focus:ring-1 focus:ring-purple-400 focus:outline-none"
+                            onkeypress="if(event.key === 'Enter') sendMessage()" />
+                        <button onclick="sendMessage()" id="sendButton"
+                            class="px-6 py-3 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white font-medium transition-all">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Panel -->
+            <div id="dataPanel" class="hidden lg:block">
+                <div class="glass-morphism rounded-2xl p-6">
+                    <h2 class="text-xl font-bold text-white mb-4">Your Data</h2>
+
+                    <div class="space-y-4">
+                        <!-- Notex Stats -->
+                        <div class="bg-white/5 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-purple-400 mb-2">Notex Pages</h3>
+                            <p class="text-2xl font-bold text-white" id="notexCount">0</p>
+                        </div>
+
+                        <!-- Whiteboard Stats -->
+                        <div class="bg-white/5 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-blue-400 mb-2">Whiteboards</h3>
+                            <p class="text-2xl font-bold text-white" id="whiteboardCount">0</p>
+                        </div>
+
+                        <!-- Saved Chats -->
+                        <div class="bg-white/5 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-green-400 mb-2">Saved Chats</h3>
+                            <p class="text-2xl font-bold text-white" id="chatCount">0</p>
+                        </div>
+
+                        <button onclick="location.href='database.html'"
+                            class="w-full px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all">
+                            View Database
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const PERPLEXITY_API_KEY = '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';
+        const API_URL = 'https://api.perplexity.ai/chat/completions';
+
+        let conversationHistory = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDataStats();
+            loadChatHistory();
+        });
+
+        // Database Access Functions
+        function getNotexData() {
+            try {
+                return JSON.parse(localStorage.getItem('futurED_pages') || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function getWhiteboardData() {
+            const whiteboards = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('whiteboard-')) {
+                    whiteboards[key] = localStorage.getItem(key);
+                }
+            }
+            return whiteboards;
+        }
+
+        function getChatsData() {
+            try {
+                return JSON.parse(localStorage.getItem('futurED_chats') || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function updateDataStats() {
+            const notexData = getNotexData();
+            const whiteboardData = getWhiteboardData();
+            const chatsData = getChatsData();
+
+            document.getElementById('notexCount').textContent = Object.keys(notexData).length;
+            document.getElementById('whiteboardCount').textContent = Object.keys(whiteboardData).length;
+            document.getElementById('chatCount').textContent = Object.keys(chatsData).length;
+        }
+
+        // CRUD Operations
+        function createNote(title, content) {
+            const pages = getNotexData();
+            const id = 'page_' + Date.now();
+            pages[id] = {
+                name: title,
+                content: content
+            };
+            localStorage.setItem('futurED_pages', JSON.stringify(pages));
+            updateDataStats();
+            return `Created note "${title}" successfully!`;
+        }
+
+        function searchNotes(query) {
+            const pages = getNotexData();
+            const results = [];
+
+            for (const [id, page] of Object.entries(pages)) {
+                const searchText = page.name + ' ' + page.content;
+                if (searchText.toLowerCase().includes(query.toLowerCase())) {
+                    results.push({
+                        id,
+                        name: page.name,
+                        preview: page.content.substring(0, 100)
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        function updateNote(titleOrId, newContent) {
+            const pages = getNotexData();
+
+            // Search by title or ID
+            let targetId = null;
+            for (const [id, page] of Object.entries(pages)) {
+                if (id === titleOrId || page.name.toLowerCase() === titleOrId.toLowerCase()) {
+                    targetId = id;
+                    break;
+                }
+            }
+
+            if (targetId) {
+                pages[targetId].content = newContent;
+                localStorage.setItem('futurED_pages', JSON.stringify(pages));
+                updateDataStats();
+                return `Updated note "${pages[targetId].name}" successfully!`;
+            }
+
+            return `Note not found: ${titleOrId}`;
+        }
+
+        function deleteNote(titleOrId) {
+            const pages = getNotexData();
+
+            // Search by title or ID
+            let targetId = null;
+            let targetName = '';
+            for (const [id, page] of Object.entries(pages)) {
+                if (id === titleOrId || page.name.toLowerCase() === titleOrId.toLowerCase()) {
+                    targetId = id;
+                    targetName = page.name;
+                    break;
+                }
+            }
+
+            if (targetId) {
+                delete pages[targetId];
+                localStorage.setItem('futurED_pages', JSON.stringify(pages));
+                updateDataStats();
+                return `Deleted note "${targetName}" successfully!`;
+            }
+
+            return `Note not found: ${titleOrId}`;
+        }
+
+        // Command Parser
+        function parseCommand(message) {
+            const lower = message.toLowerCase();
+
+            // Create note
+            if (lower.includes('create') && lower.includes('note')) {
+                const match = message.match(/create.*note.*["'](.+?)["']/i);
+                if (match) {
+                    const title = match[1];
+                    return createNote(title, '<h1>' + title + '</h1><p>New note created by Spacey</p>');
+                }
+            }
+
+            // Search notes
+            if (lower.includes('search') && (lower.includes('note') || lower.includes('my'))) {
+                const match = message.match(/search.*for\s+["']?(.+?)["']?$/i) ||
+                    message.match(/search.*["'](.+?)["']/i);
+                if (match) {
+                    const results = searchNotes(match[1]);
+                    if (results.length > 0) {
+                        let response = `Found ${results.length} note(s):\n\n`;
+                        results.forEach((r, i) => {
+                            response += `${i + 1}. **${r.name}**\n   ${r.preview}...\n\n`;
+                        });
+                        return response;
+                    }
+                    return `No notes found matching "${match[1]}"`;
+                }
+            }
+
+            // Delete note
+            if (lower.includes('delete') && lower.includes('note')) {
+                const match = message.match(/delete.*note.*["'](.+?)["']/i) ||
+                    message.match(/delete.*titled?\s+["'](.+?)["']/i);
+                if (match) {
+                    return deleteNote(match[1]);
+                }
+            }
+
+            // List notes
+            if (lower.includes('list') && (lower.includes('note') || lower.includes('all'))) {
+                const pages = getNotexData();
+                const pageList = Object.values(pages).map(p => p.name);
+                if (pageList.length > 0) {
+                    return `You have ${pageList.length} note(s):\n\n` + pageList.map((n, i) => `${i + 1}. ${n}`).join('\n');
+                }
+                return 'You have no notes yet.';
+
+                const isUser = role === 'user';
+                const bgColor = isUser ? 'bg-blue-500/20' : 'bg-white/10';
+                const avatar = isUser ? getUserInitial() : 'S';
+                const avatarBg = isUser ? 'bg-blue-500' : 'bg-gradient-to-r from-violet-400 to-purple-400';
+
+                // Parse markdown for assistant messages
+                const formattedContent = isUser ? content : marked.parse(content);
+
+                messageDiv.innerHTML = `
+                <div class="flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}">
+                    <div class="w-10 h-10 rounded-full ${avatarBg} flex items-center justify-center text-white font-bold">
+                        ${avatar}
+                    </div>
+                    <div class="flex-1">
+                        <div class="${bgColor} rounded-lg p-4">
+                            <div class="text-gray-200 prose prose-invert max-w-none">
+                                ${formattedContent}
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1 ${isUser ? 'text-right' : ''}">
+                            ${new Date().toLocaleTimeString()}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                chatContainer.appendChild(messageDiv);
+            }
+
+            function showTypingIndicator() {
+                const chatContainer = document.getElementById('chatContainer');
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typingIndicator';
+                typingDiv.className = 'message';
+                typingDiv.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-violet-400 to-purple-400 flex items-center justify-center text-white font-bold">
+                        S
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-white/10 rounded-lg p-4">
+                            <div class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+                chatContainer.appendChild(typingDiv);
+                scrollToBottom();
+            }
+
+            function removeTypingIndicator() {
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+
+            function scrollToBottom() {
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            function getUserInitial() {
+                try {
+                    const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
+                    return (userData.name || 'U')[0].toUpperCase();
+                } catch (e) {
+                    return 'U';
+                }
+            }
+
+            function clearChat() {
+                if (confirm('Are you sure you want to clear the chat?')) {
+                    const chatContainer = document.getElementById('chatContainer');
+                    chatContainer.innerHTML = '';
+                    conversationHistory = [];
+
+                    // Re-add welcome message
+                    addMessage(`Hello! I'm Spacey, your AI assistant with full access to your FuturED database. 
+                
+I can help you with:
+- Creating, reading, updating, and deleting notes in Notex
+- Searching through your whiteboard drawings
+- Managing your educational resources
+- Answering questions using Perplexity AI
+
+Try commands like: "Create a new note about Python", "Search my notes for math", "Delete the note titled 'Old Project'", or ask me anything!`, 'assistant');
+                }
+            }
+
+            function saveChat() {
+                const chats = getChatsData();
+                const chatId = 'chat_' + Date.now();
+
+                chats[chatId] = {
+                    messages: conversationHistory,
+                    timestamp: new Date().toISOString()
+                };
+
+                localStorage.setItem('futurED_chats', JSON.stringify(chats));
+                updateDataStats();
+
+                alert('Chat saved successfully!');
+            }
+
+            function loadChatHistory() {
+                // Load the most recent chat if exists
+                const chats = getChatsData();
+                const chatIds = Object.keys(chats).sort().reverse();
+
+                if (chatIds.length > 0 && confirm('Load your most recent chat?')) {
+                    const mostRecent = chats[chatIds[0]];
+                    conversationHistory = mostRecent.messages || [];
+
+                    const chatContainer = document.getElementById('chatContainer');
+                    chatContainer.innerHTML = '';
+
+                    conversationHistory.forEach(msg => {
+                        addMessage(msg.content, msg.role);
+                    });
+                }
+            }
+
+            function toggleDataPanel() {
+                const panel = document.getElementById('dataPanel');
+                panel.classList.toggle('hidden');
+            }
+    </script>
+</body>
+
+</html>

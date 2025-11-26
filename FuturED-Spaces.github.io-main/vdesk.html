@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VDesk - Your Digital Textbook Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        space: ['Space Grotesk', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            min-height: 100vh;
+        }
+
+        .textbook-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .textbook-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.7);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(139, 92, 246, 0.5);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #8B5CF6;
+            background: rgba(139, 92, 246, 0.1);
+            transform: scale(1.02);
+        }
+
+        .drop-zone-content {
+            pointer-events: none;
+        }
+
+        .pdf-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 0.5rem;
+            color: #A78BFA;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <script>
+        if (!sessionStorage.getItem('userLoggedIn')) {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <div
+        class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900/20 via-slate-900/20 to-slate-900/30 pointer-events-none">
+    </div>
+
+    <div class="w-full max-w-7xl mx-auto p-4 relative z-10">
+        <!-- Header -->
+        <div class="glass-morphism rounded-2xl p-6 mb-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-300 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </a>
+                    <div class="flex items-center gap-3">
+                        <svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="4" y="4" width="16" height="18" rx="2" fill="url(#bookGradient)" />
+                            <path d="M8 8h8M8 12h8M8 16h5" stroke="white" stroke-width="1" opacity="0.5" />
+                            <path d="M12 4v18" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+                            <defs>
+                                <linearGradient id="bookGradient" x1="4" y1="4" x2="20" y2="22">
+                                    <stop offset="0%" stop-color="#8B5CF6" />
+                                    <stop offset="100%" stop-color="#6366F1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <h1
+                            class="text-3xl font-bold bg-gradient-to-r from-violet-400 to-indigo-400 text-transparent bg-clip-text">
+                            VDesk - Textbook Library
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openAddTextbookModal()"
+                        class="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white transition-all flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Textbook
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="glass-morphism rounded-2xl p-6 mb-4">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" placeholder="Search textbooks by title, author, or subject..."
+                        class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none"
+                        oninput="filterTextbooks()" />
+                </div>
+                <select id="categoryFilter" onchange="filterTextbooks()"
+                    class="px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none">
+                    <option value="">All Subjects</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Science">Science</option>
+                    <option value="Programming">Programming</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Business">Business</option>
+                    <option value="Arts">Arts</option>
+                    <option value="Other">Other</option>
+                </select>
+                <select id="sortFilter" onchange="sortTextbooks()"
+                    class="px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="title">Title A-Z</option>
+                    <option value="author">Author A-Z</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- PDF Drop Zone -->
+        <div id="dropZone" class="glass-morphism rounded-2xl p-8 mb-4 drop-zone text-center">
+            <div class="drop-zone-content">
+                <svg class="w-16 h-16 mx-auto mb-4 text-violet-400" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <h3 class="text-xl font-semibold text-white mb-2">Drop PDF Here</h3>
+                <p class="text-gray-400 mb-4">Drag and drop your PDF textbook files here, or click to browse</p>
+                <input type="file" id="pdfFileInput" accept=".pdf" multiple class="hidden"
+                    onchange="handleFileSelect(event)" />
+                <button onclick="document.getElementById('pdfFileInput').click()"
+                    class="px-6 py-3 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 transition-all">
+                    Browse Files
+                </button>
+            </div>
+        </div>
+
+        <!-- Textbooks Grid -->
+        <div class="glass-morphism rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">My Textbooks</h2>
+                <span id="textbookCount" class="text-gray-400">0 textbooks</span>
+            </div>
+            <div id="textbooksGrid"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 custom-scrollbar">
+                <!-- Textbook cards will be dynamically inserted here -->
+            </div>
+            <div id="emptyState" class="text-center py-12 hidden">
+                <svg class="w-24 h-24 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <h3 class="text-xl font-semibold text-gray-400 mb-2">No textbooks found</h3>
+                <p class="text-gray-500">Drop a PDF or click "Add Textbook" to start building your library</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Textbook Modal -->
+    <div id="textbookModal" class="modal">
+        <div class="modal-content glass-morphism rounded-2xl p-8 max-w-2xl w-full mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h2 id="modalTitle" class="text-2xl font-bold text-white">Add Textbook</h2>
+                <button onclick="closeTextbookModal()" class="text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="textbookForm" onsubmit="saveTextbook(event)" class="space-y-4">
+                <input type="hidden" id="textbookId" />
+                <div>
+                    <label class="block text-gray-300 mb-2">Title *</label>
+                    <input type="text" id="bookTitle" required
+                        class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none"
+                        placeholder="Enter textbook title" />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-300 mb-2">Author *</label>
+                        <input type="text" id="bookAuthor" required
+                            class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none"
+                            placeholder="Author name" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 mb-2">Subject *</label>
+                        <select id="bookCategory" required
+                            class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none">
+                            <option value="">Select subject</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Science">Science</option>
+                            <option value="Programming">Programming</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Business">Business</option>
+                            <option value="Arts">Arts</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-300 mb-2">Edition</label>
+                        <input type="text" id="bookEdition"
+                            class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none"
+                            placeholder="e.g., 5th Edition" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 mb-2">Year</label>
+                        <input type="number" id="bookYear"
+                            class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none"
+                            placeholder="Publication year" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-300 mb-2">File URL or Path</label>
+                    <input type="text" id="bookUrl"
+                        class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none"
+                        placeholder="Link to PDF or local file path" />
+                    <div id="pdfStatus" class="mt-2 hidden">
+                        <div class="pdf-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
+                                <path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                            </svg>
+                            <span id="pdfFileName">PDF attached</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-300 mb-2">Notes</label>
+                    <textarea id="bookNotes" rows="3"
+                        class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:border-violet-400 focus:ring-1 focus:ring-violet-400 focus:outline-none resize-none"
+                        placeholder="Add notes about this textbook..."></textarea>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="submit"
+                        class="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white font-medium transition-all">
+                        Save Textbook
+                    </button>
+                    <button type="button" onclick="closeTextbookModal()"
+                        class="px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 transition-all">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Textbook Modal -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content glass-morphism rounded-2xl p-8 max-w-2xl w-full mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h2 id="viewTitle" class="text-2xl font-bold text-white"></h2>
+                <button onclick="closeViewModal()" class="text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="viewContent" class="space-y-4 text-gray-300">
+                <!-- Content will be dynamically inserted -->
+            </div>
+            <div class="flex gap-3 pt-6">
+                <button onclick="editFromView()"
+                    class="flex-1 px-6 py-3 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 transition-all">
+                    Edit
+                </button>
+                <button id="openBookBtn" onclick="openTextbookFile()"
+                    class="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white font-medium transition-all">
+                    Open Textbook
+                </button>
+                <button onclick="closeViewModal()"
+                    class="px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 transition-all">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="vdesk-script.js"></script>
+</body>
+
+</html>

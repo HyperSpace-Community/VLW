@@ -1,0 +1,430 @@
+/* Notion AI Styles for Notex */
+
+/* ============================================
+   AI Selection Toolbar (appears on text selection)
+   ============================================ */
+.ai-selection-toolbar {
+    position: absolute;
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    border-radius: 8px;
+    padding: 6px 12px;
+    box-shadow: 0 8px 16px rgba(124, 58, 237, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
+    display: none;
+    animation: slideUp 0.2s ease-out;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.ai-selection-toolbar.active {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-selection-toolbar:hover {
+    background: linear-gradient(135deg, #6d28d9 0%, #9333ea 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(124, 58, 237, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.ai-selection-toolbar-icon {
+    width: 16px;
+    height: 16px;
+    color: white;
+}
+
+.ai-selection-toolbar-text {
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ============================================
+   AI Command Menu (Notion-style popup)
+   ============================================ */
+.ai-command-menu {
+    position: absolute;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    min-width: 320px;
+    max-width: 400px;
+    max-height: 500px;
+    overflow: hidden;
+    z-index: 10001;
+    display: none;
+    flex-direction: column;
+    animation: menuSlideIn 0.2s ease-out;
+}
+
+.ai-command-menu.active {
+    display: flex;
+}
+
+@keyframes menuSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.ai-command-menu-header {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-command-menu-icon {
+    width: 20px;
+    height: 20px;
+    color: #7c3aed;
+}
+
+.ai-command-menu-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.ai-command-search {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.ai-command-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.ai-command-search input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.ai-command-list {
+    overflow-y: auto;
+    max-height: 350px;
+    padding: 8px 0;
+}
+
+.ai-command-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+}
+
+.ai-command-item:hover {
+    background: #f3f4f6;
+}
+
+.ai-command-item.selected {
+    background: #ede9fe;
+}
+
+.ai-command-item-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.ai-command-item-content {
+    flex: 1;
+}
+
+.ai-command-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 2px;
+}
+
+.ai-command-item-description {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.ai-command-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 8px 0;
+}
+
+.ai-command-custom-input {
+    padding: 12px 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.ai-command-custom-input input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+}
+
+.ai-command-custom-input input::placeholder {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* ============================================
+   AI Response Box (Purple gradient container)
+   ============================================ */
+.ai-response-box {
+    position: relative;
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    border: 1px solid #e9d5ff;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    animation: fadeSlideIn 0.3s ease-out;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ai-response-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.ai-response-icon {
+    width: 20px;
+    height: 20px;
+    color: #7c3aed;
+}
+
+.ai-response-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6d28d9;
+}
+
+.ai-response-content {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2937;
+    margin-bottom: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.ai-response-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.ai-response-loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e5e7eb;
+    border-top-color: #7c3aed;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   AI Action Buttons
+   ============================================ */
+.ai-action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ai-action-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-action-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.ai-action-btn.primary {
+    background: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+}
+
+.ai-action-btn.primary:hover {
+    background: #6d28d9;
+    border-color: #6d28d9;
+}
+
+.ai-action-btn.danger {
+    color: #dc2626;
+}
+
+.ai-action-btn.danger:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+}
+
+.ai-action-btn-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* ============================================
+   AI Placeholder (Empty line trigger)
+   ============================================ */
+.ai-placeholder {
+    color: #9ca3af;
+    font-style: italic;
+    pointer-events: none;
+    user-select: none;
+}
+
+.ai-placeholder.active {
+    color: #7c3aed;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.ai-placeholder:hover {
+    color: #6d28d9;
+}
+
+/* ============================================
+   Slash Command Suggestions
+   ============================================ */
+.ai-slash-menu {
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    min-width: 240px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 9999;
+    display: none;
+    animation: menuSlideIn 0.15s ease-out;
+}
+
+.ai-slash-menu.active {
+    display: block;
+}
+
+.ai-slash-menu-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+}
+
+.ai-slash-menu-item:hover,
+.ai-slash-menu-item.selected {
+    background: #f3f4f6;
+}
+
+.ai-slash-menu-item-icon {
+    font-size: 16px;
+}
+
+.ai-slash-menu-item-text {
+    font-size: 14px;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+/* ============================================
+   Animations  
+   ============================================ */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.ai-hidden {
+    display: none !important;
+}
+
+.ai-visible {
+    display: block !important;
+}
+
+/* Custom Scrollbar for AI components */
+.ai-command-list::-webkit-scrollbar,
+.ai-response-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ai-command-list::-webkit-scrollbar-track,
+.ai-response-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ai-command-list::-webkit-scrollbar-thumb,
+.ai-response-content::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.ai-command-list::-webkit-scrollbar-thumb:hover,
+.ai-response-content::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
