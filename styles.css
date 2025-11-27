@@ -317,9 +317,68 @@ body {
     box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
 }
 
+.futured-ball .ball-content {
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+}
+
 .product-ball:hover .ball-content {
     transform: scale(1.2);
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+}
+
+/* Rotating Orb */
+.rotating-orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    box-shadow: 
+        0 0 40px rgba(102, 126, 234, 0.6),
+        0 0 80px rgba(118, 75, 162, 0.4),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    z-index: 5;
+    animation: rotateOrb 8s linear infinite, pulseOrb 3s ease-in-out infinite;
+    opacity: 0.8;
+}
+
+@keyframes rotateOrb {
+    0% {
+        transform: translate(-50%, -50%) rotateY(0deg) rotateX(0deg);
+    }
+    25% {
+        transform: translate(-50%, -50%) rotateY(90deg) rotateX(20deg);
+    }
+    50% {
+        transform: translate(-50%, -50%) rotateY(180deg) rotateX(0deg);
+    }
+    75% {
+        transform: translate(-50%, -50%) rotateY(270deg) rotateX(-20deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotateY(360deg) rotateX(0deg);
+    }
+}
+
+@keyframes pulseOrb {
+    0%, 100% {
+        box-shadow: 
+            0 0 40px rgba(102, 126, 234, 0.6),
+            0 0 80px rgba(118, 75, 162, 0.4),
+            inset 0 0 20px rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        box-shadow: 
+            0 0 60px rgba(102, 126, 234, 0.8),
+            0 0 120px rgba(118, 75, 162, 0.6),
+            inset 0 0 30px rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%) scale(1.1);
+    }
 }
 
 .ball-tooltip {

@@ -1,14 +1,14 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Mobile menu functionality
     const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
     const mobileNav = document.querySelector('.mobile-nav');
     const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
-    
+
     if (mobileMenuToggle && mobileNav) {
-        mobileMenuToggle.addEventListener('click', function() {
+        mobileMenuToggle.addEventListener('click', function () {
             mobileMenuToggle.classList.toggle('active');
             mobileNav.classList.toggle('active');
-            
+
             // Prevent body scroll when menu is open
             if (mobileNav.classList.contains('active')) {
                 document.body.style.overflow = 'hidden';
@@ -16,27 +16,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.style.overflow = '';
             }
         });
-        
+
         // Close mobile menu when clicking on a link
         mobileNavLinks.forEach(link => {
-            link.addEventListener('click', function() {
+            link.addEventListener('click', function () {
                 mobileMenuToggle.classList.remove('active');
                 mobileNav.classList.remove('active');
                 document.body.style.overflow = '';
             });
         });
-        
+
         // Close mobile menu when clicking outside
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!mobileMenuToggle.contains(e.target) && !mobileNav.contains(e.target)) {
                 mobileMenuToggle.classList.remove('active');
                 mobileNav.classList.remove('active');
                 document.body.style.overflow = '';
             }
         });
-        
+
         // Close mobile menu on window resize if it gets too large
-        window.addEventListener('resize', function() {
+        window.addEventListener('resize', function () {
             if (window.innerWidth > 968) {
                 mobileMenuToggle.classList.remove('active');
                 mobileNav.classList.remove('active');
@@ -113,106 +113,206 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Simple Orbital Animation System
     const productBalls = document.querySelectorAll('.product-ball');
-    
+
     if (productBalls.length === 0) {
         console.log('No product balls found - orbital animation will not start');
         return;
     }
-    
+
     console.log(`Found ${productBalls.length} product balls for orbital animation`);
-    
+
     // Animation control variables - declare before use
     let animationPaused = false;
     const pauseThreshold = 768; // Pause on mobile devices
-    
-    // Simple animation variables
-    let animationTime = 0;
-    const animationSpeed = 0.012; // Degrees per frame
-    
-    // Ball positions and radii
-    const ballConfigs = [
-        { radius: 120, speed: 1.2, initialAngle: 0 },    // LATMO - inner orbit
-        { radius: 180, speed: 0.8, initialAngle: Math.PI } // MAi - outer orbit
+
+    // Physics-based animation with gravity
+    const gravity = 0.5; // Gravitational strength
+    const damping = 0.998; // Very slight damping to maintain stable orbits
+
+    // Ball physics objects - configured for stable circular orbits
+    const ballPhysics = [
+        // LATMO - starts on right side with tangential upward velocity
+        {
+            x: 150,
+            y: 0,
+            vx: 0,
+            vy: 2.8,
+            mass: 1,
+            targetRadius: 150,  // Designated orbital radius
+            isPaused: false  // Individual pause state
+        },
+        // MAi - starts on left side with tangential downward velocity
+        {
+            x: -180,
+            y: 0,
+            vx: 0,
+            vy: -2.6,
+            mass: 1,
+            targetRadius: 180,  // Designated orbital radius
+            isPaused: false  // Individual pause state
+        },
+        // FuturED - starts at top with tangential rightward velocity
+        {
+            x: 0,
+            y: -150,
+            vx: 2.7,
+            vy: 0,
+            mass: 1,
+            targetRadius: 150,  // Designated orbital radius
+            isPaused: false  // Individual pause state
+        }
     ];
 
-    // Initialize balls with simple positioning
+    // Center (Sun/VL) collision boundary
+    const sunRadius = 60; // Half of the rotating orb size (80px / 2 = 40) + safety margin
+
+    // Initialize balls with initial positions and individual hover pause
     productBalls.forEach((ball, index) => {
-        if (index >= ballConfigs.length) return;
-        
-        const config = ballConfigs[index];
-        
-        // Set initial position (balls are centered at 50% 50% by CSS)
-        const x = config.radius * Math.cos(config.initialAngle);
-        const y = config.radius * Math.sin(config.initialAngle);
-        
-        // Style the ball for visibility - translate from center position
-        ball.style.transform = `translate(${x - 15}px, ${y - 15}px)`;
+        if (index >= ballPhysics.length) return;
+
+        const physics = ballPhysics[index];
+
+        // Set initial position
+        ball.style.transform = `translate(${physics.x - 15}px, ${physics.y - 15}px)`;
         ball.style.opacity = '1';
         ball.style.pointerEvents = 'auto';
-        
-        console.log(`Ball ${index} positioned at (${x}, ${y}) with radius ${config.radius}`);
-        
+
+        console.log(`Ball ${index} initialized at (${physics.x}, ${physics.y}) with target radius ${physics.targetRadius}`);
+
+        // Add individual hover pause functionality
+        ball.addEventListener('mouseenter', function () {
+            physics.isPaused = true;
+            console.log(`Ball ${index} paused`);
+        });
+
+        ball.addEventListener('mouseleave', function () {
+            physics.isPaused = false;
+            console.log(`Ball ${index} resumed`);
+        });
+
         // Add click functionality
-        ball.addEventListener('click', function() {
+        ball.addEventListener('click', function () {
             const product = this.getAttribute('data-product');
             if (product === 'latmo') {
                 window.location.href = 'latmo.html';
             } else if (product === 'mai') {
                 window.location.href = 'mai.html';
+            } else if (product === 'futured') {
+                window.location.href = 'FuturED-Spaces.github.io-main/index.html';
             }
         });
     });
 
-    // Simple animation loop with debugging
+    // Physics-based gravity animation loop with orbital constraints
     function animateOrbitalSystem() {
         // Skip animation updates if paused (for mobile performance)
+        // This global pause is now only for visibilitychange, not hover.
         if (animationPaused) {
             requestAnimationFrame(animateOrbitalSystem);
             return;
         }
-        
-        animationTime += animationSpeed;
-        
+
         productBalls.forEach((ball, index) => {
-            if (index >= ballConfigs.length) return;
-            
-            const config = ballConfigs[index];
-            const angle = config.initialAngle + (animationTime * config.speed);
-            
-            // Calculate new position
-            const x = config.radius * Math.cos(angle);
-            const y = config.radius * Math.sin(angle);
-            
-            // Update ball position - translate from center position (subtract half ball size)
-            ball.style.transform = `translate(${x - 15}px, ${y - 15}px)`;
-            ball.style.opacity = '1';
-            
-            // Debug logging every 300 frames (about 5 seconds at 60fps)
-            if (Math.floor(animationTime * 1000) % 300 === 0 && index === 0) {
-                console.log(`Ball ${index} at angle ${angle.toFixed(2)}, position (${x.toFixed(1)}, ${y.toFixed(1)})`);
+            if (index >= ballPhysics.length) return;
+
+            const physics = ballPhysics[index];
+
+            // Skip physics update if this individual ball is paused
+            if (physics.isPaused) {
+                return; // Keep ball at current position, don't update physics
             }
+
+            // Calculate distance to center (gravitational pull point)
+            const dx = 0 - physics.x;
+            const dy = 0 - physics.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Prevent division by zero
+            if (distance === 0) return;
+
+            // Calculate gravitational force with sun collision boundary
+            const effectiveDistance = Math.max(distance, sunRadius);
+            const force = gravity / (effectiveDistance * effectiveDistance) * 1000;
+
+            // Calculate acceleration components
+            const ax = (dx / distance) * force;
+            const ay = (dy / distance) * force;
+
+            // Update velocity with acceleration and damping
+            physics.vx = (physics.vx + ax) * damping;
+            physics.vy = (physics.vy + ay) * damping;
+
+            // Update position with velocity
+            physics.x += physics.vx;
+            physics.y += physics.vy;
+
+            // BOUNDARY CONSTRAINT: Keep ball on its designated circular orbit
+            const currentDistance = Math.sqrt(physics.x * physics.x + physics.y * physics.y);
+
+            if (currentDistance > 0) {
+                // Normalize position to target radius (circular orbit constraint)
+                const normalizedX = (physics.x / currentDistance) * physics.targetRadius;
+                const normalizedY = (physics.y / currentDistance) * physics.targetRadius;
+
+                // Blend current position with normalized position for smooth constraint
+                const constraintStrength = 0.15; // How strongly to pull back to circular orbit
+                physics.x = physics.x * (1 - constraintStrength) + normalizedX * constraintStrength;
+                physics.y = physics.y * (1 - constraintStrength) + normalizedY * constraintStrength;
+            }
+
+            // COLLISION PREVENTION: Ensure ball never gets closer than sun boundary
+            const finalDistance = Math.sqrt(physics.x * physics.x + physics.y * physics.y);
+            if (finalDistance < sunRadius) {
+                // Push ball away from center to maintain minimum distance
+                const pushFactor = sunRadius / finalDistance;
+                physics.x *= pushFactor;
+                physics.y *= pushFactor;
+
+                // Reflect velocity to bounce away from center
+                const dotProduct = (physics.vx * physics.x + physics.vy * physics.y) / finalDistance;
+                physics.vx = physics.vx - 2 * dotProduct * (physics.x / finalDistance);
+                physics.vy = physics.vy - 2 * dotProduct * (physics.y / finalDistance);
+            }
+
+            // Update ball visual position
+            ball.style.transform = `translate(${physics.x - 15}px, ${physics.y - 15}px)`;
+            ball.style.opacity = '1';
         });
-        
+
         requestAnimationFrame(animateOrbitalSystem);
     }
-    
-    // Start the simple orbital animation
-    console.log('Starting orbital animation system...');
+
+    // Start the gravity-based orbital animation
+    console.log('Starting gravity-based orbital animation system...');
     animateOrbitalSystem();
+
+    // Pause orbital animation on hover
+    const orbitalSystem = document.querySelector('.orbital-system');
+    if (orbitalSystem) {
+        // Removed global hover pause, now handled individually by balls
+    }
 
     // Handle window resize for responsive orbital system
     let resizeTimeout;
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(function() {
-            // Recalculate orbital radii for new screen size
+        resizeTimeout = setTimeout(function () {
+            // Recalculate scale for new screen size
             const screenWidth = window.innerWidth;
             const scaleFactor = screenWidth <= 480 ? 0.6 : screenWidth <= 768 ? 0.8 : 1.0;
-            
-            ballConfigs[0].radius = 120 * scaleFactor; // LATMO
-            ballConfigs[1].radius = 180 * scaleFactor; // MAi
-            
-            console.log('Orbital radii updated for screen size:', screenWidth);
+
+            // Scale all ball positions and velocities
+            ballPhysics.forEach((physics, index) => {
+                if (index === 0) { // LATMO
+                    physics.x = 150 * scaleFactor * (physics.x > 0 ? 1 : -1);
+                } else if (index === 1) { // MAi
+                    physics.x = -180 * scaleFactor * (physics.x > 0 ? 1 : -1);
+                } else if (index === 2) { // FuturED
+                    physics.y = -150 * scaleFactor * (physics.y > 0 ? 1 : -1);
+                }
+            });
+
+            console.log('Orbital physics updated for screen size:', screenWidth);
         }, 250); // Debounce resize events
     });
 
@@ -229,14 +329,14 @@ document.addEventListener('DOMContentLoaded', function() {
             animationPaused = false;
         }
     }
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
 
     // Smooth Rhombus color animation for both rhombuses
     const rhombuses = ['#line1', '#line2']; // Both rhombus IDs
     const originalColor = 'rgba(68, 250, 255, 0.8)'; // Bright cyan color
-    
+
     // Array of vibrant colors for random selection
     const colors = [
         'rgba(255, 68, 68, 0.8)',   // Red
@@ -250,25 +350,25 @@ document.addEventListener('DOMContentLoaded', function() {
         'rgba(255, 68, 136, 0.8)',  // Pink
         'rgba(136, 68, 255, 0.8)'   // Purple
     ];
-    
+
     // Helper to get a random color from the array
     const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
-    
+
     console.log('Setting up rhombus color animations...');
-    
+
     rhombuses.forEach((rhombusId, index) => {
         const rhombus = document.querySelector(rhombusId);
         console.log(`Looking for rhombus: ${rhombusId}`, rhombus);
-        
+
         if (rhombus) {
             // Set initial color
             rhombus.style.stroke = originalColor;
             console.log(`Rhombus ${rhombusId} found and initial color set`);
-            
+
             function animateRhombusColor() {
                 const randomColor = getRandomColor();
                 console.log(`Animating ${rhombusId} to color: ${randomColor}`);
-                
+
                 // Animate to random color with smooth transition
                 anime({
                     targets: rhombus,
@@ -294,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             }
-            
+
             // Start each rhombus animation with a slight delay offset
             setTimeout(animateRhombusColor, 2000 + (index * 1000));
         } else {
@@ -379,24 +479,24 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('scroll', () => {
         const scrollY = window.scrollY;
         const scrollPercentage = Math.min(scrollY / window.innerHeight, 1);
-        
+
         // Smoother orbital system scaling
         anime.set('.orbital-system', {
             scale: 1 - scrollPercentage * 0.08,
             opacity: Math.max(0.2, 1 - scrollPercentage * 0.25),
         });
-        
+
         // Update orbital rings color based on scroll position
         const isNearProductsSection = scrollY > window.innerHeight * 0.5;
         if (isNearProductsSection !== (lastScrollY > window.innerHeight * 0.5)) {
             const orbits = document.querySelectorAll('.orbit-ring');
             orbits.forEach(orbit => {
                 orbit.style.transition = 'border-color 0.6s ease';
-                orbit.style.borderColor = isNearProductsSection ? 
+                orbit.style.borderColor = isNearProductsSection ?
                     'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.1)';
             });
         }
-        
+
         lastScrollY = scrollY;
     });
 
@@ -417,12 +517,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Custom Video Player for LATMO demo - works on any page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const video = document.getElementById('latmoVideo');
     if (!video) return;
 
     console.log('Video player initialized');
-    
+
     // Get all control elements
     const playPauseBtn = document.getElementById('playPauseBtn');
     const currentTimeEl = document.getElementById('currentTime');
@@ -452,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function togglePlayPause() {
         const playIcon = playPauseBtn.querySelector('.play-icon');
         const pauseIcon = playPauseBtn.querySelector('.pause-icon');
-        
+
         if (video.paused) {
             video.play().then(() => {
                 if (playIcon) playIcon.style.display = 'none';
@@ -470,7 +570,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update time display and progress bar
     video.addEventListener('timeupdate', () => {
         if (!video.duration) return;
-        
+
         const progress = (video.currentTime / video.duration) * 100;
         if (progressFill) progressFill.style.width = `${progress}%`;
         if (progressHandle) progressHandle.style.left = `${progress}%`;
@@ -554,12 +654,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Add loading animation
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     document.body.classList.add('loaded');
 });
 
 // Scroll-based white theme transition for Our Innovations section
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const productsSection = document.getElementById('products');
     const header = document.querySelector('.header');
     if (!productsSection) return;
@@ -567,7 +667,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let isLightMode = false;
     let fontCycleInterval = null;
     let currentFontIndex = 0;
-    
+
     // Array of fonts to cycle through (using the provided Google Fonts)
     const fonts = [
         { family: "'Bitcount', monospace", weight: "600", spacing: "1px", transform: "uppercase" },
@@ -578,18 +678,18 @@ document.addEventListener('DOMContentLoaded', function() {
         { family: "'Bodoni Moda SC', serif", weight: "600", spacing: "1px", transform: "uppercase" },
         { family: "'Cinzel', serif", weight: "600", spacing: "1.5px", transform: "uppercase" }
     ];
-    
+
     // Function to get a random font different from current
     function getRandomFont() {
         let randomIndex;
         do {
             randomIndex = Math.floor(Math.random() * fonts.length);
         } while (randomIndex === currentFontIndex && fonts.length > 1);
-        
+
         currentFontIndex = randomIndex;
         return fonts[randomIndex];
     }
-    
+
     // Function to apply random font to section header
     function applyRandomFont(sectionHeader) {
         const randomFont = getRandomFont();
@@ -598,22 +698,22 @@ document.addEventListener('DOMContentLoaded', function() {
         sectionHeader.style.letterSpacing = randomFont.spacing;
         sectionHeader.style.textTransform = randomFont.transform;
     }
-    
+
     // Function to start font cycling
     function startFontCycling(sectionHeader) {
         if (fontCycleInterval) return; // Already running
-        
+
         fontCycleInterval = setInterval(() => {
             applyRandomFont(sectionHeader);
         }, 800); // Change font every 800ms
     }
-    
+
     // Function to stop font cycling
     function stopFontCycling(sectionHeader) {
         if (fontCycleInterval) {
             clearInterval(fontCycleInterval);
             fontCycleInterval = null;
-            
+
             // Revert to original font (matching CSS)
             sectionHeader.style.fontFamily = "";
             sectionHeader.style.fontWeight = "800";
@@ -627,26 +727,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const bgR = Math.round(10 + (255 - 10) * progress);
         const bgG = Math.round(10 + (255 - 10) * progress);
         const bgB = Math.round(10 + (255 - 10) * progress);
-        
+
         const textR = Math.round(255 - 255 * progress);
         const textG = Math.round(255 - 255 * progress);
         const textB = Math.round(255 - 255 * progress);
-        
+
         // Apply theme to body
         document.body.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
         document.body.style.color = `rgb(${textR}, ${textG}, ${textB})`;
-        
+
         // Apply theme to header
         if (header) {
             header.style.background = `rgba(${bgR}, ${bgG}, ${bgB}, 0.6)`;
             header.style.color = `rgb(${textR}, ${textG}, ${textB})`;
-            
+
             // Update logo color
             const logo = header.querySelector('.logo');
             if (logo) {
                 logo.style.color = `rgb(${textR}, ${textG}, ${textB})`;
             }
-            
+
             // Update nav links
             const navLinks = header.querySelectorAll('.nav a');
             navLinks.forEach(link => {
@@ -654,20 +754,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 link.style.color = `rgba(${textR}, ${textG}, ${textB}, ${inactiveOpacity})`;
             });
         }
-        
+
         // Apply theme to products section
         const sectionBgR = Math.round(8 + (255 - 8) * progress);
         const sectionBgG = Math.round(8 + (255 - 8) * progress);
         const sectionBgB = Math.round(8 + (255 - 8) * progress);
         productsSection.style.backgroundColor = `rgb(${sectionBgR}, ${sectionBgG}, ${sectionBgB})`;
-        
+
         // Update section header with font changes
         const sectionHeader = document.getElementById('innovations-title');
         const sectionText = productsSection.querySelector('.section-header p');
         if (sectionHeader) {
             sectionHeader.style.color = `rgb(${textR}, ${textG}, ${textB})`;
             sectionHeader.style.transition = 'color 0.3s ease, font-family 0.4s ease, font-weight 0.4s ease, letter-spacing 0.4s ease, text-transform 0.4s ease';
-            
+
             // Start/stop random font cycling based on white theme progress
             if (progress > 0.5) {
                 // In white theme - start random font cycling
@@ -683,7 +783,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const subTextB = Math.round(136 + (51 - 136) * progress);
             sectionText.style.color = `rgb(${subTextR}, ${subTextG}, ${subTextB})`;
         }
-        
+
         // Update product cards
         const productCards = productsSection.querySelectorAll('.product-card');
         productCards.forEach(card => {
@@ -691,42 +791,42 @@ document.addEventListener('DOMContentLoaded', function() {
             const cardBgG = Math.round(17 + (248 - 17) * progress);
             const cardBgB = Math.round(17 + (248 - 17) * progress);
             card.style.backgroundColor = `rgb(${cardBgR}, ${cardBgG}, ${cardBgB})`;
-            
+
             const borderOpacity = progress > 0.5 ? 0.1 : 0.1;
             const borderR = Math.round(255 * (1 - progress));
             const borderG = Math.round(255 * (1 - progress));
             const borderB = Math.round(255 * (1 - progress));
             card.style.borderColor = `rgba(${borderR}, ${borderG}, ${borderB}, ${borderOpacity})`;
-            
+
             // Update card text elements
             const cardTitle = card.querySelector('h3');
             const cardText = card.querySelector('p');
             const cardFeatures = card.querySelectorAll('.product-features li');
             const statusText = card.querySelector('.status-text');
             const learnMoreBtn = card.querySelector('.btn-primary');
-            
+
             if (cardTitle) cardTitle.style.color = `rgb(${textR}, ${textG}, ${textB})`;
-            
+
             if (cardText) {
                 const cardTextR = Math.round(160 + (51 - 160) * progress);
                 const cardTextG = Math.round(160 + (51 - 160) * progress);
                 const cardTextB = Math.round(160 + (51 - 160) * progress);
                 cardText.style.color = `rgb(${cardTextR}, ${cardTextG}, ${cardTextB})`;
             }
-            
+
             if (statusText) {
                 const statusR = Math.round(136 + (102 - 136) * progress);
                 const statusG = Math.round(136 + (102 - 136) * progress);
                 const statusB = Math.round(136 + (102 - 136) * progress);
                 statusText.style.color = `rgb(${statusR}, ${statusG}, ${statusB})`;
             }
-            
+
             cardFeatures.forEach(feature => {
                 const featureR = Math.round(204 + (68 - 204) * progress);
                 const featureG = Math.round(204 + (68 - 204) * progress);
                 const featureB = Math.round(204 + (68 - 204) * progress);
                 feature.style.color = `rgb(${featureR}, ${featureG}, ${featureB})`;
-                
+
                 // Fix arrow (::before) color for light theme
                 if (progress > 0.5) {
                     feature.style.setProperty('--arrow-color', '#000000');
@@ -734,7 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     feature.style.setProperty('--arrow-color', '#ffffff');
                 }
             });
-            
+
             // Update Learn More button for light mode
             if (learnMoreBtn) {
                 if (progress > 0.5) {
@@ -748,7 +848,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
+
         // Update hero Explore Solutions button if visible
         const exploreSolutionsBtn = document.querySelector('.hero .btn-primary');
         if (exploreSolutionsBtn && progress > 0.3) {
@@ -769,14 +869,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const sectionTop = productsSection.offsetTop;
         const scrollY = window.scrollY;
         const windowHeight = window.innerHeight;
-        
+
         // Start transition when section is 80% of viewport away
         const transitionStart = sectionTop - windowHeight * 0.8;
         // Complete transition when section top reaches viewport
         const transitionEnd = sectionTop - windowHeight * 0.1;
-        
+
         let progress = 0;
-        
+
         if (scrollY >= transitionStart && scrollY <= transitionEnd) {
             // We're in the transition zone - gradually change from dark to light
             progress = (scrollY - transitionStart) / (transitionEnd - transitionStart);
@@ -788,7 +888,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // We're before the transition zone, stay in dark mode
             progress = 0;
         }
-        
+
         updateTheme(progress);
         isLightMode = progress > 0.5;
     }
@@ -807,7 +907,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Listen to scroll events
     window.addEventListener('scroll', throttledScrollHandler);
-    
+
     // Initial call
     handleScroll();
 });
@@ -815,15 +915,15 @@ document.addEventListener('DOMContentLoaded', function() {
 // Function to scroll to products section with white theme transition
 function scrollToProducts() {
     console.log('scrollToProducts called'); // Debug log
-    
+
     const productsSection = document.getElementById('products');
     if (!productsSection) {
         console.log('Products section not found');
         return;
     }
-    
+
     console.log('Products section found, creating overlay'); // Debug log
-    
+
     // Create and show white flash overlay immediately
     const flashOverlay = document.createElement('div');
     flashOverlay.style.cssText = `
@@ -838,15 +938,15 @@ function scrollToProducts() {
         pointer-events: none;
         transition: opacity 0.3s ease-in-out;
     `;
-    
+
     document.body.appendChild(flashOverlay);
-    
+
     // Force immediate white flash
     requestAnimationFrame(() => {
         flashOverlay.style.opacity = '0.95';
         console.log('White flash started'); // Debug log
     });
-    
+
     // Start scroll after brief delay
     setTimeout(() => {
         productsSection.scrollIntoView({
@@ -855,13 +955,13 @@ function scrollToProducts() {
         });
         console.log('Scroll started'); // Debug log
     }, 200);
-    
+
     // Fade out white overlay
     setTimeout(() => {
         flashOverlay.style.opacity = '0';
         console.log('White flash ending'); // Debug log
     }, 800);
-    
+
     // Clean up overlay
     setTimeout(() => {
         if (flashOverlay.parentNode) {
